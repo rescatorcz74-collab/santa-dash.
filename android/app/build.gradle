@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'cz.smejc.santadash'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'cz.smejc.santadash'
+        minSdk 21
+        targetSdk 35
+        versionCode 49
+        versionName '4.9'
+    }
+
+    // Dvě jazykové verze: cz (Vánoční Santa Dash) a en (Christmas Santa Dash).
+    // Dají se nainstalovat obě současně.
+    flavorDimensions 'lang'
+    productFlavors {
+        cz {
+            dimension 'lang'
+        }
+        en {
+            dimension 'lang'
+            applicationIdSuffix '.en'
+        }
+    }
+
+    // Pevný podpisový klíč: každá nová verze APK jde nainstalovat přes starou
+    // (rekordy zůstanou zachované). Klíč je jen pro vlastní instalaci, ne pro Google Play.
+    signingConfigs {
+        shared {
+            storeFile file('santa-dash.keystore')
+            storePassword 'santadash'
+            keyAlias 'santadash'
+            keyPassword 'santadash'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.shared
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.shared
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+}
