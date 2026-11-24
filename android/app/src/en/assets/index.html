@@ -654,43 +654,195 @@
       border: 1px solid #2b4c7e;
     }
 
-    /* Dotykový D-pad */
+    /* ---------------------------------------------------------
+       DOTYKOVÉ OVLÁDÁNÍ – tři schémata, vzhled inspirovaný
+       kapesními digitálními hrami z 80. let (kulatá oranžová tlačítka)
+       --------------------------------------------------------- */
     #touch-controls {
       display: none;
       width: 100%;
-      max-width: 320px;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
+      gap: 10px;
       margin-top: 2px;
     }
 
-    .dpad {
-      display: grid;
-      grid-template-columns: repeat(3, 56px);
-      grid-template-rows: repeat(2, 52px);
-      gap: 6px;
-      margin: 0 auto;
+    .touch-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #2c313b 0%, #1a1d23 100%);
+      border: 2px solid #4a515e;
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06), 0 4px 10px rgba(0, 0, 0, 0.5);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    .dpad button {
-      background: linear-gradient(180deg, #1d3566 0%, #112040 100%);
-      border: 2px solid var(--border-ice);
-      color: #fff;
-      font-size: 20px;
-      border-radius: 8px;
-      box-shadow: 0 3px 0 #070d1f;
-      touch-action: manipulation;
+    .touch-panel:empty,
+    body.touch-stick .touch-panel,
+    body.touch-cross #touch-right {
+      display: none !important;
+    }
+
+    .pad {
+      display: none;
+      touch-action: none;
+    }
+
+    body.touch-split .pad-split-v {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    body.touch-split .pad-split-h {
+      display: flex;
+      flex-direction: row;
+      gap: 14px;
+    }
+
+    body.touch-cross .pad-cross {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(3, 48px);
+    }
+
+    /* Kulatá oranžová tlačítka */
+    .pad-split-v button,
+    .pad-split-h button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 3px solid #3a2410;
+      background: radial-gradient(circle at 35% 30%, #ffc27a 0%, #f0801f 55%, #b9550c 100%);
+      box-shadow: 0 5px 0 #5c300a, inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+      color: #3a1a04;
+      font-size: 22px;
+      font-weight: bold;
+      line-height: 1;
+      padding: 0;
+      touch-action: none;
+      cursor: pointer;
+      transition: transform 0.05s, box-shadow 0.05s;
+    }
+
+    /* Křížový ovladač */
+    .pad-cross button {
+      border: none;
+      background: linear-gradient(180deg, #3a3f48 0%, #16181c 100%);
+      color: #d6dbe4;
+      font-size: 18px;
+      padding: 0;
+      touch-action: none;
       cursor: pointer;
     }
 
-    .dpad button:active {
-      background: var(--border-ice);
-      color: #070d1f;
-      transform: translateY(2px);
+    .pad-cross .c-up { grid-column: 2; grid-row: 1; border-radius: 8px 8px 0 0; }
+    .pad-cross .c-left { grid-column: 1; grid-row: 2; border-radius: 8px 0 0 8px; }
+    .pad-cross .c-right { grid-column: 3; grid-row: 2; border-radius: 0 8px 8px 0; }
+    .pad-cross .c-down { grid-column: 2; grid-row: 3; border-radius: 0 0 8px 8px; }
+    .pad-cross .c-mid {
+      grid-column: 2;
+      grid-row: 2;
+      background: #16181c;
+      position: relative;
+    }
+    .pad-cross .c-mid::after {
+      content: '';
+      position: absolute;
+      left: 30%;
+      top: 30%;
+      width: 40%;
+      height: 40%;
+      border-radius: 50%;
+      background: #0b0c0e;
+    }
+
+    .pad button.pressed {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #5c300a;
+      filter: brightness(1.25);
+    }
+
+    .pad-cross button.pressed {
+      background: linear-gradient(180deg, #ffd166 0%, #e0a92e 100%);
+      color: #3a1a04;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Virtuální páčka – položit palec do levé části hrací plochy a táhnout */
+    #stick-zone {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 55%;
+      z-index: 5;
+      touch-action: none;
+    }
+
+    body.touch-stick.in-game.touch-device #stick-zone {
+      display: block;
+    }
+
+    .stick-base,
+    .stick-knob {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      display: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .stick-base {
+      width: 110px;
+      height: 110px;
+      border: 3px solid rgba(255, 209, 102, 0.55);
+      background: rgba(255, 209, 102, 0.08);
+    }
+
+    .stick-knob {
+      width: 54px;
+      height: 54px;
+      background: radial-gradient(circle at 35% 30%, #ffc27a 0%, #f0801f 60%, #b9550c 100%);
+      border: 3px solid #3a2410;
+      opacity: 0.9;
+    }
+
+    .stick-hint {
+      position: absolute;
+      left: 12px;
+      bottom: 10px;
+      font-size: 16px;
+      color: rgba(255, 209, 102, 0.6);
+      pointer-events: none;
+    }
+
+    /* Výběr ovládání – jen na dotykových zařízeních */
+    .touch-only,
+    .touch-only-btn {
+      display: none;
+    }
+
+    body.touch-device:not(.tv) .touch-only-btn {
+      display: inline-block;
+    }
+
+    body.touch-device:not(.tv) .touch-only {
+      display: flex;
+    }
+
+    #touch-scheme-wrap {
+      flex-direction: column;
     }
 
     @media (max-width: 820px), (pointer: coarse) {
-      #touch-controls {
+      body:not(.tv) #touch-controls {
         display: flex;
       }
       #hud {
@@ -709,9 +861,9 @@
     @media (orientation: landscape) and (max-height: 520px) {
       body:not(.tv) #game-wrapper {
         display: grid;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto 1fr auto;
         grid-template-rows: auto minmax(0, 1fr);
-        grid-template-areas: "hud hud" "pad canvas";
+        grid-template-areas: "hud hud hud" "padl canvas padr";
         align-items: stretch;
         max-width: none;
         height: 100vh;
@@ -759,28 +911,36 @@
         border-width: 2px;
       }
 
-      /* Šipky vlevo vedle hrací plochy (nic nepřekrývají) */
+      /* Ovládání po stranách hrací plochy (nic nepřekrývá) */
       body:not(.tv) #touch-controls {
-        grid-area: pad;
+        display: contents;
+      }
+
+      body:not(.tv) #touch-left {
+        grid-area: padl;
         align-self: end;
-        width: auto;
-        max-width: none;
-        margin: 0 0 4px 0;
+        margin-bottom: 6px;
       }
 
-      body:not(.tv) .dpad {
-        grid-template-columns: repeat(3, 46px);
-        grid-template-rows: repeat(2, 46px);
-        gap: 4px;
+      body:not(.tv) #touch-right {
+        grid-area: padr;
+        align-self: end;
+        margin-bottom: 6px;
       }
 
-      body:not(.tv) .dpad button {
-        font-size: 18px;
+      body:not(.tv) .pad-split-v button,
+      body:not(.tv) .pad-split-h button {
+        width: 54px;
+        height: 54px;
+      }
+
+      body:not(.tv) .pad-split-h {
+        flex-direction: column;
       }
 
       /* Šipky jen během hraní, ať nepřekrývají menu */
-      body:not(.tv):not(.in-game) #touch-controls {
-        display: none;
+      body:not(.tv):not(.in-game) .touch-panel {
+        display: none !important;
       }
     }
   </style>
@@ -824,6 +984,13 @@
     <div id="canvas-container">
       <canvas id="gameCanvas"></canvas>
 
+      <!-- Virtuální páčka (schéma „Páčka“) -->
+      <div id="stick-zone">
+        <div class="stick-base" id="stick-base"></div>
+        <div class="stick-knob" id="stick-knob"></div>
+        <div class="stick-hint">👆 Drag with your thumb</div>
+      </div>
+
       <!-- Úvodní obrazovka -->
       <div class="overlay" id="screen-start">
         <h1>🎄 CHRISTMAS SANTA DASH 🎁</h1>
@@ -846,6 +1013,14 @@
           </div>
         </div>
 
+        <div class="song-select-wrap touch-only" id="touch-scheme-wrap">
+          <div class="song-select-label">🎮 Touch controls:</div>
+          <div class="song-select">
+            <button type="button" class="song-btn scheme-btn" data-scheme="split">◀▶ ▲▼ Split arrows</button>
+            <button type="button" class="song-btn scheme-btn" data-scheme="cross">✚ Cross pad</button>
+            <button type="button" class="song-btn scheme-btn" data-scheme="stick">🕹 Joystick</button>
+          </div>
+        </div>
         <div class="start-name">
           <label for="start-name-input">👤 Player name:</label>
           <input type="text" id="start-name-input" class="name-input small" maxlength="10" autocomplete="off" spellcheck="false" placeholder="SANTA" />
@@ -887,6 +1062,7 @@
           <button type="button" class="retro-btn" id="btn-pause-restart">↻ Restart level</button>
           <button type="button" class="retro-btn" id="btn-pause-music">🎵 Music</button>
           <button type="button" class="retro-btn" id="btn-pause-mute">🔊 Sound</button>
+          <button type="button" class="retro-btn touch-only-btn" id="btn-pause-scheme">🎮 Controls</button>
           <button type="button" class="retro-btn" id="btn-pause-menu">⌂ Main menu</button>
         </div>
         <div id="dev-panel" class="dev-panel hidden">
@@ -1009,13 +1185,24 @@
 
     <!-- Dotykový D-pad pro mobily a tablety -->
     <div id="touch-controls">
-      <div class="dpad">
-        <div></div>
-        <button type="button" data-dir="up" aria-label="Up">▲</button>
-        <div></div>
-        <button type="button" data-dir="left" aria-label="Left">◀</button>
-        <button type="button" data-dir="down" aria-label="Down">▼</button>
-        <button type="button" data-dir="right" aria-label="Right">▶</button>
+      <div class="touch-panel" id="touch-left">
+        <div class="pad pad-split-v">
+          <button type="button" data-dir="up" aria-label="Up">▲</button>
+          <button type="button" data-dir="down" aria-label="Down">▼</button>
+        </div>
+        <div class="pad pad-cross">
+          <button type="button" class="c-up" data-dir="up" aria-label="Up">▲</button>
+          <button type="button" class="c-left" data-dir="left" aria-label="Left">◀</button>
+          <div class="c-mid"></div>
+          <button type="button" class="c-right" data-dir="right" aria-label="Right">▶</button>
+          <button type="button" class="c-down" data-dir="down" aria-label="Down">▼</button>
+        </div>
+      </div>
+      <div class="touch-panel" id="touch-right">
+        <div class="pad pad-split-h">
+          <button type="button" data-dir="left" aria-label="Left">◀</button>
+          <button type="button" data-dir="right" aria-label="Right">▶</button>
+        </div>
       </div>
     </div>
   </div>
@@ -4637,8 +4824,12 @@ Time bonus: +${timeBonus} pts`;
     const scaleX = canvas.width / worldW;
     const scaleY = canvas.height / worldH;
     const scale = Math.min(scaleX, scaleY);
-    const offsetX = (canvas.width - worldW * scale) / 2;
-    const offsetY = (canvas.height - worldH * scale) / 2;
+    const MAX_STRETCH = 1.3;
+    const stretch = Math.max(1, Math.min(MAX_STRETCH, scaleX / scale));
+    const sx = scale * stretch;
+    const sy = scale;
+    const offsetX = (canvas.width - worldW * sx) / 2;
+    const offsetY = (canvas.height - worldH * sy) / 2;
     ctx.fillStyle = "#070d1f";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     let shakeX = 0;
@@ -4650,7 +4841,7 @@ Time bonus: +${timeBonus} pts`;
     }
     ctx.save();
     ctx.translate(offsetX + shakeX, offsetY + shakeY);
-    ctx.scale(scale, scale);
+    ctx.scale(sx, sy);
     ctx.fillStyle = "#09122c";
     ctx.fillRect(0, 0, worldW, worldH);
     for (let y = 0; y < ROWS; y++) {
@@ -4782,7 +4973,9 @@ Time bonus: +${timeBonus} pts`;
   }
   function gameLoop(timestamp) {
     var _a, _b;
-    document.body.classList.toggle("in-game", state === "PLAYING" || state === "INTRO" || state === "DYING" || state === "LEVEL_CLEAR" || state === "FLYING");
+    const inGame = state === "PLAYING" || state === "INTRO" || state === "DYING" || state === "LEVEL_CLEAR" || state === "FLYING";
+    document.body.classList.toggle("in-game", inGame);
+    if (!inGame && touchDir) releaseTouchDir();
     pollGamepad();
     keepMenuFocus();
     if (!lastFrameTime) lastFrameTime = timestamp;
@@ -5621,30 +5814,156 @@ Time bonus: +${timeBonus} pts`;
     if (!overlay) return;
     if (!overlay.contains(document.activeElement)) focusPrimary(overlay);
   }
-  const dirMap = {
+  const DIR_INFO = {
     up: { code: "ArrowUp", dx: 0, dy: -1 },
     down: { code: "ArrowDown", dx: 0, dy: 1 },
     left: { code: "ArrowLeft", dx: -1, dy: 0 },
     right: { code: "ArrowRight", dx: 1, dy: 0 }
   };
-  document.querySelectorAll(".dpad button[data-dir]").forEach((btn) => {
-    const info = dirMap[btn.dataset.dir];
-    const press = (e) => {
-      e.preventDefault();
+  const IS_TOUCH = window.matchMedia && matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+  if (IS_TOUCH && !TV_MODE) document.body.classList.add("touch-device");
+  const SCHEMES = ["split", "cross", "stick"];
+  const SCHEME_NAMES = { split: "◀▶ ▲▼ Arrows", cross: "✚ Cross pad", stick: "🕹 Joystick" };
+  let touchScheme = "split";
+  try {
+    const saved = localStorage.getItem("santaDash.touchScheme");
+    if (SCHEMES.includes(saved)) touchScheme = saved;
+  } catch (e) {
+  }
+  function applyTouchScheme(sch) {
+    touchScheme = sch;
+    SCHEMES.forEach((x) => document.body.classList.toggle("touch-" + x, x === sch));
+    document.querySelectorAll(".scheme-btn").forEach((b) => b.classList.toggle("selected", b.dataset.scheme === sch));
+    const pb = document.getElementById("btn-pause-scheme");
+    if (pb) pb.textContent = "🎮 " + SCHEME_NAMES[sch];
+    try {
+      localStorage.setItem("santaDash.touchScheme", sch);
+    } catch (e) {
+    }
+    releaseTouchDir();
+    setTimeout(resizeCanvas, 0);
+  }
+  let touchDir = null;
+  const pointerDirs = /* @__PURE__ */ new Map();
+  function setTouchDir(dir) {
+    if (dir === touchDir) return;
+    if (touchDir) keys[DIR_INFO[touchDir].code] = false;
+    touchDir = dir;
+    document.querySelectorAll(".pad button.pressed").forEach((b) => b.classList.remove("pressed"));
+    if (dir) {
+      const info = DIR_INFO[dir];
       if (state === "INTRO") state = "PLAYING";
       keys[info.code] = true;
       queuedDir = { dx: info.dx, dy: info.dy };
-    };
-    const release = (e) => {
+      document.querySelectorAll(`.pad button[data-dir="${dir}"]`).forEach((b) => b.classList.add("pressed"));
+      if (navigator.vibrate) {
+        try {
+          navigator.vibrate(12);
+        } catch (e) {
+        }
+      }
+    }
+  }
+  function releaseTouchDir() {
+    pointerDirs.clear();
+    setTouchDir(null);
+  }
+  function refreshTouchDir() {
+    let last = null;
+    pointerDirs.forEach((d) => {
+      if (d) last = d;
+    });
+    setTouchDir(last);
+  }
+  function dirAtPoint(x, y) {
+    const el = document.elementFromPoint(x, y);
+    const btn = el && el.closest ? el.closest(".pad button[data-dir]") : null;
+    return btn ? btn.dataset.dir : null;
+  }
+  document.querySelectorAll(".pad").forEach((pad) => {
+    pad.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      keys[info.code] = false;
+      document.body.classList.remove("kb-nav");
+      pointerDirs.delete(e.pointerId);
+      pointerDirs.set(e.pointerId, dirAtPoint(e.clientX, e.clientY));
+      refreshTouchDir();
+    });
+    pad.addEventListener("pointermove", (e) => {
+      if (!pointerDirs.has(e.pointerId)) return;
+      e.preventDefault();
+      const d = dirAtPoint(e.clientX, e.clientY);
+      if (d !== pointerDirs.get(e.pointerId)) {
+        pointerDirs.delete(e.pointerId);
+        pointerDirs.set(e.pointerId, d);
+        refreshTouchDir();
+      }
+    });
+    const end = (e) => {
+      if (!pointerDirs.has(e.pointerId)) return;
+      pointerDirs.delete(e.pointerId);
+      refreshTouchDir();
     };
-    btn.addEventListener("touchstart", press, { passive: false });
-    btn.addEventListener("touchend", release, { passive: false });
-    btn.addEventListener("mousedown", press);
-    btn.addEventListener("mouseup", release);
-    btn.addEventListener("mouseleave", release);
+    pad.addEventListener("pointerup", end);
+    pad.addEventListener("pointercancel", end);
+    pad.addEventListener("lostpointercapture", end);
+    pad.addEventListener("contextmenu", (e) => e.preventDefault());
   });
+  const stickZone = document.getElementById("stick-zone");
+  const stickBase = document.getElementById("stick-base");
+  const stickKnob = document.getElementById("stick-knob");
+  let stickId = null;
+  let stickX = 0;
+  let stickY = 0;
+  function stickShow(on) {
+    stickBase.style.display = on ? "block" : "none";
+    stickKnob.style.display = on ? "block" : "none";
+  }
+  stickZone.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (stickId !== null) return;
+    stickId = e.pointerId;
+    const r = stickZone.getBoundingClientRect();
+    stickX = e.clientX - r.left;
+    stickY = e.clientY - r.top;
+    stickBase.style.left = stickKnob.style.left = stickX + "px";
+    stickBase.style.top = stickKnob.style.top = stickY + "px";
+    stickShow(true);
+    try {
+      stickZone.setPointerCapture(e.pointerId);
+    } catch (err) {
+    }
+  });
+  stickZone.addEventListener("pointermove", (e) => {
+    if (e.pointerId !== stickId) return;
+    e.preventDefault();
+    const r = stickZone.getBoundingClientRect();
+    let dx = e.clientX - r.left - stickX;
+    let dy = e.clientY - r.top - stickY;
+    const len = Math.hypot(dx, dy);
+    const max = 42;
+    const k = len > max ? max / len : 1;
+    stickKnob.style.left = stickX + dx * k + "px";
+    stickKnob.style.top = stickY + dy * k + "px";
+    let dir = null;
+    if (len > 16) {
+      dir = Math.abs(dx) > Math.abs(dy) ? dx > 0 ? "right" : "left" : dy > 0 ? "down" : "up";
+    }
+    setTouchDir(dir);
+  });
+  const stickEnd = (e) => {
+    if (e.pointerId !== stickId) return;
+    stickId = null;
+    stickShow(false);
+    setTouchDir(null);
+  };
+  stickZone.addEventListener("pointerup", stickEnd);
+  stickZone.addEventListener("pointercancel", stickEnd);
+  document.querySelectorAll(".scheme-btn").forEach((b) => b.addEventListener("click", () => applyTouchScheme(b.dataset.scheme)));
+  document.getElementById("btn-pause-scheme").addEventListener("click", () => {
+    const i = SCHEMES.indexOf(touchScheme);
+    applyTouchScheme(SCHEMES[(i + 1) % SCHEMES.length]);
+  });
+  applyTouchScheme(touchScheme);
   let touchStartX = 0;
   let touchStartY = 0;
   canvas.addEventListener("touchstart", (e) => {

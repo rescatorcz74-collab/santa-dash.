@@ -70,10 +70,19 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
     hra na to při spuštění upozorní.
 
  6) Na telefonu hrajte NA ŠÍŘKU: nahoře je tenká lišta
-    s tlačítkem Pauza, šipky jsou vlevo vedle hrací plochy.
+    s tlačítkem Pauza, ovládání je po stranách hrací plochy.
     Restart úrovně, hudba, zvuk a návrat do menu jsou v pauze.
     Testovací režim: v pauze Hudba, Zvuk, Hudba, Zvuk
     a pak tlačítko Pauza v liště.
+
+ 7) Dotykové ovládání se vybírá na úvodní obrazovce nebo
+    kdykoli v pauze tlačítkem "Ovládání":
+      - Rozdělené šipky: vlevo nahoru/dolů, vpravo vlevo/vpravo
+      - Kříž: klasický kříž vlevo
+      - Páčka: palec kamkoli do levé poloviny plochy a táhnout
+    Santa jde, dokud tlačítko držíte; palcem lze přejet
+    z jedné šipky na druhou bez zvednutí. Volba se pamatuje.
+    Na Androidu tlačítka při stisku krátce zavibrují.
 
 
 --------------------------------------------------------------
@@ -143,8 +152,8 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
  4) Aby si telefony stáhly novou verzi, zvyšte v souboru sw.js
     číslo v řádku
-       const CACHE = 'santa-dash-v5.1';
-    (např. na v5.2).
+       const CACHE = 'santa-dash-v5.2';
+    (např. na v5.3).
 
 
 --------------------------------------------------------------
