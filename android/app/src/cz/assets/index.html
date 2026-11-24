@@ -682,10 +682,37 @@
     }
 
     .touch-panel:empty,
-    body.touch-stick .touch-panel,
-    body.touch-cross #touch-right {
+    body.touch-stick #touch-left {
       display: none !important;
     }
+
+    #touch-right {
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    /* Jukebox – rychlé přepnutí melodie bez pauzy */
+    .jukebox-btn {
+      width: 62px;
+      height: 74px;
+      padding: 4px 3px 2px;
+      border-radius: 14px;
+      border: 2px solid #5c300a;
+      background: linear-gradient(180deg, #3a2a20 0%, #1d1410 100%);
+      box-shadow: 0 4px 0 #120a06, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      touch-action: manipulation;
+      flex: 0 0 auto;
+      transition: transform 0.06s;
+    }
+    .jukebox-btn svg { width: 100%; height: 100%; display: block; }
+    .jukebox-btn:active,
+    .jukebox-btn.bump { transform: translateY(3px) scale(0.96); box-shadow: 0 1px 0 #120a06; }
+    .jukebox-btn .neon { animation: jukeGlow 1.6s ease-in-out infinite; }
+    .jukebox-btn .n2 { animation-delay: 0.25s; }
+    .jukebox-btn .n3 { animation-delay: 0.5s; }
+    @keyframes jukeGlow { 50% { opacity: 0.45; } }
+    body.music-off .jukebox-btn .neon { animation: none; opacity: 0.3; }
 
     .pad {
       display: none;
@@ -927,6 +954,13 @@
         grid-area: padr;
         align-self: end;
         margin-bottom: 6px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      body:not(.tv) .jukebox-btn {
+        width: clamp(50px, 15vh, 64px);
+        height: clamp(60px, 18vh, 78px);
       }
 
       body:not(.tv) .pad-split-v button,
@@ -986,6 +1020,10 @@
           <option value="3">4. Dobrý král Václav</option>
           <option value="4">5. O Tannenbaum</option>
           <option value="5">6. We Wish You a Merry Christmas</option>
+          <option value="6">7. Nesem vám noviny</option>
+          <option value="7">8. Pásli ovce Valaši</option>
+          <option value="8">9. Joy to the World</option>
+          <option value="9">10. Up on the Housetop</option>
         </select>
         <button type="button" class="retro-btn" id="btn-music" title="Hudba na pozadí (B)">🎵</button>
         <button type="button" class="retro-btn" id="btn-mute" title="Všechny zvuky (M)">🔊</button>
@@ -1022,6 +1060,10 @@
             <button type="button" class="song-btn" data-song="3">4. Dobrý král Václav</button>
             <button type="button" class="song-btn" data-song="4">5. O Tannenbaum</button>
             <button type="button" class="song-btn" data-song="5">6. We Wish You a Merry Christmas</button>
+            <button type="button" class="song-btn" data-song="6">7. Nesem vám noviny</button>
+            <button type="button" class="song-btn" data-song="7">8. Pásli ovce Valaši</button>
+            <button type="button" class="song-btn" data-song="8">9. Joy to the World</button>
+            <button type="button" class="song-btn" data-song="9">10. Up on the Housetop</button>
           </div>
         </div>
 
@@ -1212,6 +1254,20 @@
         </div>
       </div>
       <div class="touch-panel" id="touch-right">
+        <button type="button" class="jukebox-btn" id="btn-jukebox" aria-label="Další melodie" title="Další melodie (J)">
+          <svg viewBox="0 0 60 74" aria-hidden="true">
+            <path d="M5 70 V29 A25 25 0 0 1 55 29 V70 Z" fill="#8a3414" stroke="#2a0f05" stroke-width="3"/>
+            <path class="neon n1" d="M10.5 68 V30 A19.5 19.5 0 0 1 49.5 30 V68" fill="none" stroke="#ffd23f" stroke-width="4"/>
+            <path class="neon n2" d="M16 68 V31 A14 14 0 0 1 44 31 V68" fill="none" stroke="#ff4f8b" stroke-width="3.2"/>
+            <path class="neon n3" d="M20.5 68 V32 A9.5 9.5 0 0 1 39.5 32 V68" fill="none" stroke="#5ad1f0" stroke-width="2.6"/>
+            <rect x="21" y="27" width="18" height="12" rx="2.5" fill="#14213d" stroke="#2a0f05" stroke-width="1.4"/>
+            <circle class="disc" cx="30" cy="33" r="4.6" fill="#0b0b0b"/>
+            <circle cx="30" cy="33" r="1.5" fill="#ffd23f"/>
+            <rect x="22" y="43" width="16" height="20" rx="2" fill="#3a1608"/>
+            <path d="M25 45 V61 M28.3 45 V61 M31.7 45 V61 M35 45 V61" stroke="#e0a040" stroke-width="1.4"/>
+            <rect x="3" y="66" width="54" height="6" rx="2" fill="#2a0f05"/>
+          </svg>
+        </button>
         <div class="pad pad-split-h">
           <button type="button" data-dir="left" aria-label="Doleva">◀</button>
           <button type="button" data-dir="right" aria-label="Doprava">▶</button>
@@ -2088,9 +2144,589 @@ function initGame() {
           ]
         },
         {
+          // Česká lidová koleda (stejná melodie jako německá „Kommet, ihr Hirten“)
+          id: 6,
+          title: "Nesem vám noviny",
+          bpm: 126,
+          stepsPerBeat: 2,
+          pauseAfter: 1.4,
+          steps: [
+            [D5, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [D5, 0.85, G2, 2],
+            [B4, 0.85, 0, 0],
+            [E5, 0.85, C3, 2],
+            [C5, 0.85, 0, 0],
+            [D5, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [D5, 0.85, G2, 2],
+            [B4, 0.85, 0, 0],
+            [E5, 0.85, C3, 2],
+            [C5, 0.85, 0, 0],
+            [D5, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [B4, 0.85, D3, 4],
+            [D5, 0.85, 0, 0],
+            [A4, 0.85, 0, 0],
+            [B4, 0.85, 0, 0],
+            [G4, 5.35, G2, 6],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D5, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [D5, 0.85, G2, 2],
+            [B4, 0.85, 0, 0],
+            [E5, 0.85, C3, 2],
+            [C5, 0.85, 0, 0],
+            [D5, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [D5, 0.85, G2, 2],
+            [B4, 0.85, 0, 0],
+            [E5, 0.85, C3, 2],
+            [C5, 0.85, 0, 0],
+            [D5, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [B4, 0.85, D3, 4],
+            [D5, 0.85, 0, 0],
+            [A4, 0.85, 0, 0],
+            [B4, 0.85, 0, 0],
+            [G4, 5.35, G2, 6],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 1.75, G2, 6],
+            [0, 0, 0, 0],
+            [B4, 0.85, 0, 0],
+            [G4, 0.85, 0, 0],
+            [B4, 0.85, 0, 0],
+            [D5, 0.85, 0, 0],
+            [G4, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [B4, 0.85, D3, 4],
+            [G4, 0.85, 0, 0],
+            [A4, 0.85, 0, 0],
+            [D4, 0.85, 0, 0],
+            [G4, 1.75, G2, 6],
+            [0, 0, 0, 0],
+            [B4, 0.85, 0, 0],
+            [G4, 0.85, 0, 0],
+            [B4, 0.85, 0, 0],
+            [D5, 0.85, 0, 0],
+            [G4, 1.75, G2, 2],
+            [0, 0, 0, 0],
+            [B4, 0.85, D3, 4],
+            [G4, 0.85, 0, 0],
+            [A4, 0.85, 0, 0],
+            [D4, 0.85, 0, 0],
+            [D5, 1.75, D3, 6],
+            [0, 0, 0, 0],
+            [B4, 0.85, 0, 0],
+            [D5, 0.85, 0, 0],
+            [A4, 0.85, 0, 0],
+            [B4, 0.85, 0, 0],
+            [G4, 5.35, G2, 6],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+          ]
+        },
+        {
+          // Moravská lidová koleda – sloka a refrén „Hajdom, hajdom, tydlidom“
+          id: 7,
+          title: "Pásli ovce Valaši",
+          bpm: 118,
+          stepsPerBeat: 2,
+          pauseAfter: 1.4,
+          steps: [
+            [C5, 0.85, C3, 4],
+            [G4, 0.85, 0, 0],
+            [G4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, C3, 4],
+            [G4, 0.85, 0, 0],
+            [G4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C5, 0.85, C3, 4],
+            [G4, 0.85, 0, 0],
+            [G4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, G2, 2],
+            [D4, 0.85, 0, 0],
+            [C4, 1.75, C3, 2],
+            [0, 0, 0, 0],
+            [C4, 0.85, C3, 4],
+            [E4, 0.85, 0, 0],
+            [E4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, C3, 4],
+            [D4, 0.85, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 0.85, C3, 4],
+            [E4, 0.85, 0, 0],
+            [E4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, G2, 2],
+            [D4, 0.85, 0, 0],
+            [C4, 1.75, C3, 2],
+            [0, 0, 0, 0],
+            [C4, 0.85, C3, 4],
+            [E4, 0.85, 0, 0],
+            [E4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, C3, 4],
+            [D4, 0.85, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 0.85, C3, 4],
+            [E4, 0.85, 0, 0],
+            [E4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, G2, 2],
+            [D4, 0.85, 0, 0],
+            [C4, 1.75, C3, 2],
+            [0, 0, 0, 0]
+          ]
+        },
+        {
+          // Lowell Mason, 1839 (melodie ANTIOCH) – volné dílo
+          id: 8,
+          title: "Joy to the World",
+          bpm: 96,
+          stepsPerBeat: 4,
+          pauseAfter: 1.5,
+          steps: [
+            [C5, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [B4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 0.85, 0, 0],
+            [G4, 5.35, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 5.35, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 5.35, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [B4, 5.35, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [B4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C5, 5.35, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C5, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C5, 1.75, C3, 8],
+            [0, 0, 0, 0],
+            [B4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C5, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C5, 1.75, C3, 8],
+            [0, 0, 0, 0],
+            [B4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 1.75, C3, 8],
+            [0, 0, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 0.85, 0, 0],
+            [F4, 0.85, 0, 0],
+            [G4, 5.35, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 0.85, 0, 0],
+            [D4, 1.75, G2, 8],
+            [0, 0, 0, 0],
+            [D4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 0.85, 0, 0],
+            [E4, 0.85, 0, 0],
+            [F4, 5.35, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 0.85, 0, 0],
+            [D4, 0.85, 0, 0],
+            [C4, 1.75, F2, 8],
+            [0, 0, 0, 0],
+            [C5, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 0.85, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+          ]
+        },
+        {
+          // Benjamin Hanby, 1864 – první vánoční píseň o Santovi, volné dílo
+          id: 9,
+          title: "Up on the Housetop",
+          bpm: 118,
+          stepsPerBeat: 4,
+          pauseAfter: 1.4,
+          steps: [
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 0.85, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 3.55, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 7.15, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 0.85, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 2.65, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 0.85, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 3.55, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 0.85, 0, 0],
+            [E4, 2.65, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 0.85, 0, 0],
+            [C4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 3.55, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 7.15, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 0.85, 0, 0],
+            [G4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [F4, 7.15, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 0.85, 0, 0],
+            [G4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 0.85, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 3.55, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 7.15, F2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [G4, 2.65, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [A4, 0.85, 0, 0],
+            [G4, 3.55, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [E4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 1.75, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, G2, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [D4, 3.55, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [C4, 7.15, C3, 8],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+          ]
+        },
+        {
           // Titulková znělka „Snowflake Pop“ – původní skladba, svižné úsečné 16tiny,
           // basa poskakující o oktávu. Není ve výběru hudby, hraje jen v titulcích.
-          id: 6,
+          id: 10,
           title: "Snowflake Pop (titulky)",
           bpm: 138,
           stepsPerBeat: 4,
@@ -2358,7 +2994,8 @@ function initGame() {
           ]
         }
       ];
-      this.CREDITS_SONG = 6;
+      this.CREDITS_SONG = 10;
+      this.PLAYLIST_SIZE = 10;
     }
     startCreditsMusic() {
       this.prevSongIdx = this.currentSongIdx;
@@ -5495,7 +6132,43 @@ function initGame() {
     const enabled = audio.toggleMusic();
     document.getElementById("btn-music").classList.toggle("off", !enabled);
     document.getElementById("btn-pause-music").classList.toggle("off", !enabled);
+    refreshMusicClass();
   }
+  function refreshMusicClass() {
+    document.body.classList.toggle("music-off", audio.muted || !audio.musicEnabled);
+  }
+  function jukeboxNext() {
+    audio.init();
+    if (audio.muted) {
+      audio.toggleMute();
+      const hudBtn = document.getElementById("btn-mute");
+      hudBtn.textContent = "🔊";
+      hudBtn.classList.remove("off");
+      document.getElementById("btn-pause-mute").classList.remove("off");
+    }
+    let idx = audio.currentSongIdx;
+    if (!audio.musicEnabled) {
+      audio.toggleMusic();
+      document.getElementById("btn-music").classList.remove("off");
+      document.getElementById("btn-pause-music").classList.remove("off");
+    } else {
+      idx = idx + 1;
+    }
+    if (idx >= audio.PLAYLIST_SIZE || idx < 0) idx = 0;
+    selectSong(idx);
+    if (state === "PLAYING" && !audio.isMusicPlaying) audio.startMusic(true);
+    refreshMusicClass();
+    const songBtn = document.querySelector('.song-btn[data-song="' + idx + '"]');
+    showDevToast("♪ " + (songBtn ? songBtn.textContent : ""), 1800);
+    const jb = document.getElementById("btn-jukebox");
+    jb.classList.add("bump");
+    setTimeout(() => jb.classList.remove("bump"), 120);
+  }
+  document.getElementById("btn-jukebox").addEventListener("click", (e) => {
+    e.preventDefault();
+    jukeboxNext();
+    e.currentTarget.blur();
+  });
   function toggleMuteUI() {
     registerDevClick("mute");
     const muted = audio.toggleMute();
@@ -5503,6 +6176,7 @@ function initGame() {
     hudBtn.textContent = muted ? "🔇" : "🔊";
     hudBtn.classList.toggle("off", muted);
     document.getElementById("btn-pause-mute").classList.toggle("off", muted);
+    refreshMusicClass();
   }
   document.getElementById("btn-music").addEventListener("click", toggleMusicUI);
   document.getElementById("btn-mute").addEventListener("click", toggleMuteUI);
@@ -5763,6 +6437,7 @@ function initGame() {
     }
     if (e.code === "KeyB") toggleMusicUI();
     if (e.code === "KeyM") toggleMuteUI();
+    if (e.code === "KeyJ" && state === "PLAYING") jukeboxNext();
   }
   function onKeyUp(e) {
     keys[e.code] = false;
@@ -5918,6 +6593,7 @@ function initGame() {
   }
   document.querySelectorAll(".touch-panel").forEach((panel) => {
     panel.addEventListener("pointerdown", (e) => {
+      if (e.target.closest && e.target.closest(".jukebox-btn")) return;
       e.preventDefault();
       document.body.classList.remove("kb-nav");
       try {

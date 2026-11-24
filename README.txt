@@ -87,6 +87,10 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
     k přirazení soba k saním). Volba se pamatuje.
     Na Androidu tlačítka při stisku krátce zavibrují.
 
+ 8) Jukebox vpravo nad šipkami přepne klepnutím na další
+    z 10 vánočních melodií, hra se nezastaví (vypnutou hudbu
+    zapne). Na klávesnici totéž dělá klávesa J.
+
 
 --------------------------------------------------------------
  3. APLIKACE PRO ANDROID TV (APK)
@@ -155,8 +159,8 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
  4) Aby si telefony stáhly novou verzi, zvyšte v souboru sw.js
     číslo v řádku
-       const CACHE = 'santa-dash-v5.5';
-    (např. na v5.6).
+       const CACHE = 'santa-dash-v5.6';
+    (např. na v5.7).
 
 
 --------------------------------------------------------------
