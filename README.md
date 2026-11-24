@@ -44,7 +44,7 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
    - **Rozdělené šipky** – vlevo ▲▼, vpravo ◀▶ (každý palec má svou osu),
    - **Kříž** – klasický kříž vlevo,
    - **Páčka** – položte palec kamkoli do levé poloviny plochy a táhněte.
-   Santa jde, dokud tlačítko držíte; palcem lze přejet z jedné šipky na druhou bez zvednutí.
+   Santa jde, dokud tlačítko držíte; palcem lze přejet z jedné šipky na druhou bez zvednutí, u kříže stačí palcem šoupat do všech čtyř směrů. Krátké klepnutí znamená přesně jeden krok.
    Volba se pamatuje. Na Androidu tlačítka při stisku krátce zavibrují.
 
 ## 3. Aplikace pro Android TV (APK)
@@ -88,7 +88,7 @@ V pauze jsou tlačítka **Restart úrovně, Hudba, Zvuk a Hlavní menu**.
 2. Web se aktualizuje sám, nové APK se samo sestaví v **Actions**.
 3. Nové APK nainstalujte na box přes staré – rekordy zůstanou zachované.
 4. Aby si telefony stáhly novou verzi, zvyšte v souboru `sw.js` číslo v řádku
-   `const CACHE = 'santa-dash-v5.2';` (např. na `v5.3`).
+   `const CACHE = 'santa-dash-v5.4';` (např. na `v5.5`).
 
 ## Řešení potíží
 

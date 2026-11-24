@@ -706,15 +706,15 @@
 
     body.touch-cross .pad-cross {
       display: grid;
-      grid-template-columns: repeat(3, 48px);
-      grid-template-rows: repeat(3, 48px);
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(3, 56px);
     }
 
     /* Kulatá oranžová tlačítka */
     .pad-split-v button,
     .pad-split-h button {
-      width: 60px;
-      height: 60px;
+      width: 66px;
+      height: 66px;
       border-radius: 50%;
       border: 3px solid #3a2410;
       background: radial-gradient(circle at 35% 30%, #ffc27a 0%, #f0801f 55%, #b9550c 100%);
@@ -732,6 +732,7 @@
     /* Křížový ovladač */
     .pad-cross button {
       border: none;
+      font-size: 22px;
       background: linear-gradient(180deg, #3a3f48 0%, #16181c 100%);
       color: #d6dbe4;
       font-size: 18px;
@@ -930,12 +931,23 @@
 
       body:not(.tv) .pad-split-v button,
       body:not(.tv) .pad-split-h button {
-        width: 54px;
-        height: 54px;
+        width: clamp(56px, 17vh, 74px);
+        height: clamp(56px, 17vh, 74px);
+        font-size: 26px;
       }
 
-      body:not(.tv) .pad-split-h {
-        flex-direction: column;
+      body:not(.tv).touch-split .pad-split-v,
+      body:not(.tv).touch-split .pad-split-h {
+        gap: 10px;
+      }
+
+      body:not(.tv).touch-cross .pad-cross {
+        grid-template-columns: repeat(3, clamp(48px, 15vh, 64px));
+        grid-template-rows: repeat(3, clamp(48px, 15vh, 64px));
+      }
+
+      body:not(.tv) .touch-panel {
+        padding: 7px;
       }
 
       /* Šipky jen během hraní, ať nepřekrývají menu */
@@ -2368,6 +2380,10 @@
       let starsPossible = 0;
       let moveTimer = 0;
       const MOVE_INTERVAL = 125;
+      // Dotyk: po prvním kroku se chvíli čeká, než Santa vykročí znovu –
+      // krátké klepnutí tak vždy znamená přesně jeden krok.
+      const TOUCH_REPEAT_DELAY = 250;
+      let touchRepeatAt = 0;
       let secondTimer = 0;
       let pushCounter = 0;
       let stateMessage = '';
@@ -3118,6 +3134,7 @@
           queuedDir = null;
           return d;
         }
+        if (touchDir && performance.now() < touchRepeatAt) return null;
         if (keys['ArrowUp'] || keys['KeyW']) return { dx: 0, dy: -1 };
         if (keys['ArrowDown'] || keys['KeyS']) return { dx: 0, dy: 1 };
         if (keys['ArrowLeft'] || keys['KeyA']) return { dx: -1, dy: 0 };
@@ -5361,6 +5378,7 @@
           if (state === 'INTRO') state = 'PLAYING';
           keys[info.code] = true;
           queuedDir = { dx: info.dx, dy: info.dy };
+          touchRepeatAt = performance.now() + TOUCH_REPEAT_DELAY;
           document.querySelectorAll(`.pad button[data-dir="${dir}"]`).forEach(b => b.classList.add('pressed'));
           if (navigator.vibrate) {
             try { navigator.vibrate(12); } catch (e) {}
@@ -5379,24 +5397,43 @@
         setTouchDir(last);
       }
 
-      function dirAtPoint(x, y) {
-        const el = document.elementFromPoint(x, y);
-        const btn = el && el.closest ? el.closest('.pad button[data-dir]') : null;
-        return btn ? btn.dataset.dir : null;
+      // Směr se počítá z polohy palce vůči středu ovladače – žádná hluchá
+      // místa mezi tlačítky, palec smí i sjet mimo, změna směru jen šoupnutím.
+      function activePad(panel) {
+        return [...panel.querySelectorAll('.pad')].find(p => p.getClientRects().length > 0) || null;
       }
 
-      document.querySelectorAll('.pad').forEach(pad => {
-        pad.addEventListener('pointerdown', (e) => {
+      function dirAtPoint(pad, x, y) {
+        if (!pad) return null;
+        const r = pad.getBoundingClientRect();
+        const dx = x - (r.left + r.width / 2);
+        const dy = y - (r.top + r.height / 2);
+        if (pad.classList.contains('pad-split-h')) {
+          return dx < 0 ? 'left' : 'right';
+        }
+        if (pad.classList.contains('pad-split-v')) {
+          return dy < 0 ? 'up' : 'down';
+        }
+        // kříž: malá mrtvá zóna uprostřed, jinak převažující osa
+        const dead = Math.min(r.width, r.height) * 0.1;
+        if (Math.abs(dx) < dead && Math.abs(dy) < dead) return null;
+        if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? 'left' : 'right';
+        return dy < 0 ? 'up' : 'down';
+      }
+
+      document.querySelectorAll('.touch-panel').forEach(panel => {
+        panel.addEventListener('pointerdown', (e) => {
           e.preventDefault();
           document.body.classList.remove('kb-nav');
+          try { panel.setPointerCapture(e.pointerId); } catch (err) {}
           pointerDirs.delete(e.pointerId);
-          pointerDirs.set(e.pointerId, dirAtPoint(e.clientX, e.clientY));
+          pointerDirs.set(e.pointerId, dirAtPoint(activePad(panel), e.clientX, e.clientY));
           refreshTouchDir();
         });
-        pad.addEventListener('pointermove', (e) => {
+        panel.addEventListener('pointermove', (e) => {
           if (!pointerDirs.has(e.pointerId)) return;
           e.preventDefault();
-          const d = dirAtPoint(e.clientX, e.clientY);
+          const d = dirAtPoint(activePad(panel), e.clientX, e.clientY);
           if (d !== pointerDirs.get(e.pointerId)) {
             pointerDirs.delete(e.pointerId);
             pointerDirs.set(e.pointerId, d);
@@ -5408,10 +5445,10 @@
           pointerDirs.delete(e.pointerId);
           refreshTouchDir();
         };
-        pad.addEventListener('pointerup', end);
-        pad.addEventListener('pointercancel', end);
-        pad.addEventListener('lostpointercapture', end);
-        pad.addEventListener('contextmenu', (e) => e.preventDefault());
+        panel.addEventListener('pointerup', end);
+        panel.addEventListener('pointercancel', end);
+        panel.addEventListener('lostpointercapture', (e) => { if (e.target === panel) end(e); });
+        panel.addEventListener('contextmenu', (e) => e.preventDefault());
       });
 
       // Virtuální páčka
