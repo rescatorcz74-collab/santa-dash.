@@ -98,6 +98,17 @@
       box-shadow: 0 0 16px rgba(255, 209, 102, 0.8);
     }
 
+    .name-input.editing {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 16px rgba(6, 214, 160, 0.8) !important;
+      outline-color: var(--accent-green) !important;
+    }
+
+    .hidden-install {
+      display: none;
+    }
+
     .tv-only {
       display: none;
     }
@@ -749,9 +760,10 @@
           <label for="start-name-input">👤 Player name:</label>
           <input type="text" id="start-name-input" class="name-input small" maxlength="10" autocomplete="off" spellcheck="false" placeholder="SANTA" />
         </div>
-        <p class="hs-note tv-only">Remote: ▲▼ change letter, ◀▶ move, OK when done.</p>
+        <p class="hs-note tv-only">Remote: OK = edit name (▲▼ letter, ◀▶ move), OK again = done.</p>
         <button type="button" class="retro-btn primary" id="btn-start">▶ PLAY</button>
         <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center">
+          <button type="button" class="retro-btn hidden-install" id="btn-install">📲 Install app</button>
           <button type="button" class="retro-btn" id="btn-scores">🏆 High Scores</button>
           <button type="button" class="retro-btn" id="btn-credits">★ Credits</button>
         </div>
@@ -805,6 +817,7 @@
             <div class="cr-gap"></div>
             <div class="cr-title">CHRISTMAS SANTA DASH</div>
             <div class="cr-sub">A Christmas tribute to Boulder Dash</div>
+            <div class="cr-small">© 2026 Jiri Smejc</div>
 
             <div class="cr-role">Created, Directed &amp; Produced by</div>
             <div class="cr-name">Jiri Smejc</div>
@@ -868,6 +881,7 @@
             <div class="cr-sub">Merry Christmas &amp; Happy New Year</div>
             <div class="cr-gap"></div>
             <div class="cr-title">🎄 THE END 🎄</div>
+            <div class="cr-small">Christmas 2026</div>
           </div>
         </div>
         <button type="button" class="retro-btn" id="btn-skip-credits">Skip ▶</button>
@@ -4745,20 +4759,35 @@
         const r = cur.getBoundingClientRect();
         const cx = r.left + r.width / 2;
         const cy = r.top + r.height / 2;
-        let best = null;
-        let bestScore = Infinity;
+        const vertical = dir === 'up' || dir === 'down';
+        const sign = (dir === 'up' || dir === 'left') ? -1 : 1;
+        // Kandidáti ve správném směru
+        const cands = [];
         for (const el of list) {
           if (el === cur) continue;
           const q = el.getBoundingClientRect();
           const dx = q.left + q.width / 2 - cx;
           const dy = q.top + q.height / 2 - cy;
-          let main, side;
-          if (dir === 'up') { if (dy > -5) continue; main = -dy; side = Math.abs(dx); }
-          if (dir === 'down') { if (dy < 5) continue; main = dy; side = Math.abs(dx); }
-          if (dir === 'left') { if (dx > -5 || Math.abs(dy) > r.height) continue; main = -dx; side = Math.abs(dy); }
-          if (dir === 'right') { if (dx < 5 || Math.abs(dy) > r.height) continue; main = dx; side = Math.abs(dy); }
-          const sc = main + side * 2.5;
-          if (sc < bestScore) { bestScore = sc; best = el; }
+          const main = (vertical ? dy : dx) * sign;
+          if (main < 6) continue;
+          // Doleva/doprava jen v rámci stejného řádku
+          if (!vertical && Math.abs(dy) > r.height * 0.6) continue;
+          cands.push({ el, main, side: Math.abs(vertical ? dx : dy) });
+        }
+        let best = null;
+        if (cands.length) {
+          // Nejbližší řádek (sloupec) a v něm prvek nejblíž k aktuálnímu
+          const nearest = Math.min(...cands.map(c => c.main));
+          const row = cands.filter(c => c.main <= nearest + 12);
+          row.sort((a, b) => a.side - b.side);
+          best = row[0].el;
+        } else if (!vertical) {
+          // Na konci řádku pokračovat dalším tlačítkem v pořadí (např. další skladba)
+          const idx = list.indexOf(cur) + sign;
+          if (idx >= 0 && idx < list.length && list[idx].tagName === cur.tagName &&
+              list[idx].parentElement === cur.parentElement) {
+            best = list[idx];
+          }
         }
         if (best) {
           best.focus({ preventScroll: true });
@@ -4790,9 +4819,26 @@
         audio.playStep();
       }
 
+      // Úprava jména na úvodní obrazovce (TV): zapnuto = šipky mění písmena
+      let nameEditing = false;
+      function setNameEditing(on) {
+        nameEditing = on;
+        const input = document.getElementById('start-name-input');
+        input.classList.toggle('editing', on);
+        if (on) {
+          const p = Math.max(0, input.value.length - 1);
+          try { input.setSelectionRange(p, input.value.length); } catch (e) {}
+          audio.playStep();
+        }
+      }
+      document.getElementById('start-name-input').addEventListener('blur', () => {
+        if (nameEditing) setNameEditing(false);
+      });
+
       // Tlačítko Zpět (ovladač TV, Esc na klávesnici, B na gamepadu).
       // Vrací false, když už není kam couvnout – aplikace pro Android TV se pak ukončí.
       function handleBack() {
+        if (nameEditing) { setNameEditing(false); return true; }
         if (state === 'PLAYING') { togglePause(); return true; }
         if (state === 'INTRO') { state = 'PLAYING'; togglePause(); return true; }
         if (state === 'PAUSED') { togglePause(); return true; }
@@ -4821,29 +4867,33 @@
           return;
         }
 
-        // Pole se jménem
+        // Pole se jménem.
+        // Na TV se chová jako tlačítko: šipky přes něj normálně projdou, OK zapne úpravu
+        // (▲▼ písmeno, ◀▶ posun) a další OK ji ukončí. Na obrazovce nového rekordu se píše hned.
         if (nameField) {
           const arrows = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
           if (arrows.includes(e.key)) {
-            // Na TV všechny šipky po automatovsku; na klávesnici mění nahoru/dolů písmeno
-            // a doleva/doprava posouvají kurzor normálně
-            if (TV_MODE || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            if (TV_MODE && (nameField.id === 'name-input' || nameEditing)) {
               e.preventDefault && e.preventDefault();
               arcadeEdit(nameField, e.key);
+              return;
             }
-            return;
-          }
-          if (isConfirm(e)) {
+            // Na klávesnici posouvají doleva/doprava normálně kurzor v textu
+            if (!TV_MODE && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
+            // Jinak pole opustit jako běžné tlačítko (pokračuje se navigací v menu níže)
+          } else if (isConfirm(e)) {
             e.preventDefault && e.preventDefault();
             if (nameField.id === 'name-input') {
               saveNameAndContinue();
             } else if (TV_MODE) {
-              document.getElementById('btn-start').focus();
+              setNameEditing(!nameEditing);
             } else if (state === 'START') {
               startNewGame(selectedLevelIdx);
             }
+            return;
+          } else {
+            return; // ostatní klávesy patří psaní
           }
-          return; // ostatní klávesy patří psaní
         }
 
         // Menu a obrazovky: šipky přesouvají výběr, OK potvrzuje
@@ -5027,6 +5077,28 @@
           touchStartY = e.touches[0].clientY;
         }
       }, { passive: true });
+
+      // Instalace na plochu telefonu: tlačítko se ukáže, jen když ji prohlížeč nabízí
+      let installPrompt = null;
+      const installBtn = document.getElementById('btn-install');
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        if (TV_MODE) return;
+        installPrompt = e;
+        installBtn.classList.remove('hidden-install');
+      });
+      installBtn.addEventListener('click', () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        installPrompt.userChoice.then(() => {
+          installPrompt = null;
+          installBtn.classList.add('hidden-install');
+        }).catch(() => {});
+      });
+      window.addEventListener('appinstalled', () => {
+        installPrompt = null;
+        installBtn.classList.add('hidden-install');
+      });
 
       // Při přepnutí do jiné záložky / minimalizaci se hra sama pozastaví
       document.addEventListener('visibilitychange', () => {

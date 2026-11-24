@@ -98,6 +98,17 @@
       box-shadow: 0 0 16px rgba(255, 209, 102, 0.8);
     }
 
+    .name-input.editing {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 16px rgba(6, 214, 160, 0.8) !important;
+      outline-color: var(--accent-green) !important;
+    }
+
+    .hidden-install {
+      display: none;
+    }
+
     .tv-only {
       display: none;
     }
@@ -749,9 +760,10 @@
           <label for="start-name-input">👤 Player name:</label>
           <input type="text" id="start-name-input" class="name-input small" maxlength="10" autocomplete="off" spellcheck="false" placeholder="SANTA" />
         </div>
-        <p class="hs-note tv-only">Remote: ▲▼ change letter, ◀▶ move, OK when done.</p>
+        <p class="hs-note tv-only">Remote: OK = edit name (▲▼ letter, ◀▶ move), OK again = done.</p>
         <button type="button" class="retro-btn primary" id="btn-start">▶ PLAY</button>
         <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center">
+          <button type="button" class="retro-btn hidden-install" id="btn-install">📲 Install app</button>
           <button type="button" class="retro-btn" id="btn-scores">🏆 High Scores</button>
           <button type="button" class="retro-btn" id="btn-credits">★ Credits</button>
         </div>
@@ -805,6 +817,7 @@
             <div class="cr-gap"></div>
             <div class="cr-title">CHRISTMAS SANTA DASH</div>
             <div class="cr-sub">A Christmas tribute to Boulder Dash</div>
+            <div class="cr-small">© 2026 Jiri Smejc</div>
 
             <div class="cr-role">Created, Directed &amp; Produced by</div>
             <div class="cr-name">Jiri Smejc</div>
@@ -868,6 +881,7 @@
             <div class="cr-sub">Merry Christmas &amp; Happy New Year</div>
             <div class="cr-gap"></div>
             <div class="cr-title">🎄 THE END 🎄</div>
+            <div class="cr-small">Christmas 2026</div>
           </div>
         </div>
         <button type="button" class="retro-btn" id="btn-skip-credits">Skip ▶</button>
@@ -5251,38 +5265,29 @@ Time bonus: +${timeBonus} pts`;
     const r = cur.getBoundingClientRect();
     const cx = r.left + r.width / 2;
     const cy = r.top + r.height / 2;
-    let best = null;
-    let bestScore = Infinity;
+    const vertical = dir === "up" || dir === "down";
+    const sign = dir === "up" || dir === "left" ? -1 : 1;
+    const cands = [];
     for (const el of list) {
       if (el === cur) continue;
       const q = el.getBoundingClientRect();
       const dx = q.left + q.width / 2 - cx;
       const dy = q.top + q.height / 2 - cy;
-      let main, side;
-      if (dir === "up") {
-        if (dy > -5) continue;
-        main = -dy;
-        side = Math.abs(dx);
-      }
-      if (dir === "down") {
-        if (dy < 5) continue;
-        main = dy;
-        side = Math.abs(dx);
-      }
-      if (dir === "left") {
-        if (dx > -5 || Math.abs(dy) > r.height) continue;
-        main = -dx;
-        side = Math.abs(dy);
-      }
-      if (dir === "right") {
-        if (dx < 5 || Math.abs(dy) > r.height) continue;
-        main = dx;
-        side = Math.abs(dy);
-      }
-      const sc = main + side * 2.5;
-      if (sc < bestScore) {
-        bestScore = sc;
-        best = el;
+      const main = (vertical ? dy : dx) * sign;
+      if (main < 6) continue;
+      if (!vertical && Math.abs(dy) > r.height * 0.6) continue;
+      cands.push({ el, main, side: Math.abs(vertical ? dx : dy) });
+    }
+    let best = null;
+    if (cands.length) {
+      const nearest = Math.min(...cands.map((c) => c.main));
+      const row = cands.filter((c) => c.main <= nearest + 12);
+      row.sort((a, b) => a.side - b.side);
+      best = row[0].el;
+    } else if (!vertical) {
+      const idx = list.indexOf(cur) + sign;
+      if (idx >= 0 && idx < list.length && list[idx].tagName === cur.tagName && list[idx].parentElement === cur.parentElement) {
+        best = list[idx];
       }
     }
     if (best) {
@@ -5314,7 +5319,28 @@ Time bonus: +${timeBonus} pts`;
     }
     audio.playStep();
   }
+  let nameEditing = false;
+  function setNameEditing(on) {
+    nameEditing = on;
+    const input = document.getElementById("start-name-input");
+    input.classList.toggle("editing", on);
+    if (on) {
+      const p = Math.max(0, input.value.length - 1);
+      try {
+        input.setSelectionRange(p, input.value.length);
+      } catch (e) {
+      }
+      audio.playStep();
+    }
+  }
+  document.getElementById("start-name-input").addEventListener("blur", () => {
+    if (nameEditing) setNameEditing(false);
+  });
   function handleBack() {
+    if (nameEditing) {
+      setNameEditing(false);
+      return true;
+    }
     if (state === "PLAYING") {
       togglePause();
       return true;
@@ -5364,23 +5390,25 @@ Time bonus: +${timeBonus} pts`;
     if (nameField) {
       const arrows = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
       if (arrows.includes(e.key)) {
-        if (TV_MODE || e.key === "ArrowUp" || e.key === "ArrowDown") {
+        if (TV_MODE && (nameField.id === "name-input" || nameEditing)) {
           e.preventDefault && e.preventDefault();
           arcadeEdit(nameField, e.key);
+          return;
         }
-        return;
-      }
-      if (isConfirm(e)) {
+        if (!TV_MODE && (e.key === "ArrowLeft" || e.key === "ArrowRight")) return;
+      } else if (isConfirm(e)) {
         e.preventDefault && e.preventDefault();
         if (nameField.id === "name-input") {
           saveNameAndContinue();
         } else if (TV_MODE) {
-          document.getElementById("btn-start").focus();
+          setNameEditing(!nameEditing);
         } else if (state === "START") {
           startNewGame(selectedLevelIdx);
         }
+        return;
+      } else {
+        return;
       }
-      return;
     }
     const overlay = activeOverlay();
     const inMenu = overlay && ["START", "PAUSED", "GAMEOVER", "NAME", "SCORES", "CREDITS"].includes(state);
@@ -5546,6 +5574,27 @@ Time bonus: +${timeBonus} pts`;
       touchStartY = e.touches[0].clientY;
     }
   }, { passive: true });
+  let installPrompt = null;
+  const installBtn = document.getElementById("btn-install");
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    if (TV_MODE) return;
+    installPrompt = e;
+    installBtn.classList.remove("hidden-install");
+  });
+  installBtn.addEventListener("click", () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    installPrompt.userChoice.then(() => {
+      installPrompt = null;
+      installBtn.classList.add("hidden-install");
+    }).catch(() => {
+    });
+  });
+  window.addEventListener("appinstalled", () => {
+    installPrompt = null;
+    installBtn.classList.add("hidden-install");
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && state === "PLAYING") {
       togglePause();
