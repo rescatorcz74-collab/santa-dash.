@@ -4262,13 +4262,27 @@ function initGame() {
     const rect = container.getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
       const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
+      const w = Math.floor(rect.width * dpr), h = Math.floor(rect.height * dpr);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
       ctx.imageSmoothingEnabled = false;
     }
   }
   window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("orientationchange", () => {
+    [50, 250, 600, 1200].forEach((t) => setTimeout(resizeCanvas, t));
+  });
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvas);
+  if (window.ResizeObserver) {
+    try {
+      new ResizeObserver(() => resizeCanvas()).observe(document.getElementById("canvas-container"));
+    } catch (e) {
+    }
+  }
   resizeCanvas();
+  let resizeCheckFrame = 0;
   const ELF_SPRITE = [
     "........PP.",
     ".....HHhP..",
@@ -4832,7 +4846,8 @@ function initGame() {
   const TITLE_FONT = (px) => `${px}px "Press Start 2P", "Courier New", monospace`;
   function render(timeSec, dt) {
     var _a;
-    if (canvas.width === 0 || canvas.height === 0) {
+    if (canvas.width === 0 || canvas.height === 0 || ++resizeCheckFrame >= 20) {
+      resizeCheckFrame = 0;
       resizeCanvas();
     }
     const worldW = COLS * TILE_SIZE;

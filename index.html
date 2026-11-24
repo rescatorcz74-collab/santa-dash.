@@ -3589,13 +3589,27 @@
         if (rect.width > 0 && rect.height > 0) {
           // Ostré vykreslení i na retina displejích
           const dpr = Math.min(window.devicePixelRatio || 1, 3);
-          canvas.width = Math.floor(rect.width * dpr);
-          canvas.height = Math.floor(rect.height * dpr);
+          const w = Math.floor(rect.width * dpr), h = Math.floor(rect.height * dpr);
+          if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w;
+            canvas.height = h;
+          }
           ctx.imageSmoothingEnabled = false;
         }
       }
+      // Velikost plochy se hlídá přímo (ne jen přes událost okna): iPhone po
+      // otočení hlásí změnu dřív, než se stránka přeskládá, a plátno by
+      // zůstalo s rozměry z režimu na výšku – obraz by byl splácnutý.
       window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('orientationchange', () => {
+        [50, 250, 600, 1200].forEach(t => setTimeout(resizeCanvas, t));
+      });
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', resizeCanvas);
+      if (window.ResizeObserver) {
+        try { new ResizeObserver(() => resizeCanvas()).observe(document.getElementById('canvas-container')); } catch (e) {}
+      }
       resizeCanvas();
+      let resizeCheckFrame = 0;
 
       // Sprite skřítka: písmena = barvy z ELF_PALETTE, tečka = průhledné
       const ELF_SPRITE = [
@@ -4232,7 +4246,9 @@
       const TITLE_FONT = (px) => `${px}px "Press Start 2P", "Courier New", monospace`;
 
       function render(timeSec, dt) {
-        if (canvas.width === 0 || canvas.height === 0) {
+        // pojistka: každých ~20 snímků ověřit, že plátno odpovídá ploše
+        if (canvas.width === 0 || canvas.height === 0 || ++resizeCheckFrame >= 20) {
+          resizeCheckFrame = 0;
           resizeCanvas();
         }
         const worldW = COLS * TILE_SIZE;
