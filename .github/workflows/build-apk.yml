@@ -1,0 +1,53 @@
+# Po každém nahrání změn sestaví aplikaci pro Android TV (APK) – českou i anglickou.
+# Hotové soubory najdete v záložce Actions → poslední běh → Artifacts → santa-dash-apk.
+name: Sestavit APK pro Android TV
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stáhnout repozitář
+        uses: actions/checkout@v4
+
+      - name: Připravit Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Převést hru pro starší WebView na TV boxu
+        working-directory: android/tools
+        run: |
+          npm install --no-save --no-package-lock esbuild@0.24.2
+          node prepare-assets.cjs
+
+      - name: Připravit Javu
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Připravit Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Sestavit APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Přejmenovat výsledné soubory
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/cz/debug/app-cz-debug.apk out/santa-dash-cz.apk
+          cp android/app/build/outputs/apk/en/debug/app-en-debug.apk out/santa-dash-en.apk
+
+      - name: Uložit APK ke stažení
+        uses: actions/upload-artifact@v4
+        with:
+          name: santa-dash-apk
+          path: out/*.apk
