@@ -2,8 +2,8 @@
 
 Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
-- **Hra v prohlížeči / na telefonu (česky):** `https://VAS-UZIVATEL.github.io/santa-dash/`
-- **Anglická verze:** `https://VAS-UZIVATEL.github.io/santa-dash/en/`
+- **Hra v prohlížeči / na telefonu (česky):** `https://rescatorcz74-collab.github.io/santa-dash/`
+- **Anglická verze:** `https://rescatorcz74-collab.github.io/santa-dash/en/`
 - **Aplikace pro Android TV:** záložka **Actions** → poslední běh → **Artifacts** → `santa-dash-apk`
 
 (`VAS-UZIVATEL` nahraďte svým jménem na GitHubu.)
