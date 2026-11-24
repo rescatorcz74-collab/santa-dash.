@@ -35,7 +35,11 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
    **📲 Nainstalovat do telefonu** – stačí na něj klepnout. Když se neobjeví, použijte menu Chromu
    **⋮** (tři tečky vpravo nahoře) → **Přidat na plochu** → **Instalovat**.
    Hra dostane ikonu, poběží přes celou obrazovku a i bez internetu.
-5. Na iPhonu: Safari → **Sdílet** → **Přidat na plochu**.
+5. Na iPhonu: adresu otevřete v **Safari** → **Sdílet** (čtvereček se šipkou) → **Přidat na plochu**.
+   Když je na iPhonu zapnutý tichý režim, hra nebude slyšet – hra na to při spuštění upozorní.
+6. Na telefonu hrajte **na šířku**: nahoře je tenká lišta s tlačítkem ⏸ Pauza, šipky jsou vlevo vedle hrací plochy.
+   Restart úrovně, hudba, zvuk a návrat do menu jsou v pauze.
+   Testovací režim: v pauze **Hudba, Zvuk, Hudba, Zvuk** a pak **⏸ Pauza** v liště.
 
 ## 3. Aplikace pro Android TV (APK)
 
@@ -78,7 +82,7 @@ V pauze jsou tlačítka **Restart úrovně, Hudba, Zvuk a Hlavní menu**.
 2. Web se aktualizuje sám, nové APK se samo sestaví v **Actions**.
 3. Nové APK nainstalujte na box přes staré – rekordy zůstanou zachované.
 4. Aby si telefony stáhly novou verzi, zvyšte v souboru `sw.js` číslo v řádku
-   `const CACHE = 'santa-dash-v5.0';` (např. na `v5.1`).
+   `const CACHE = 'santa-dash-v5.1';` (např. na `v5.2`).
 
 ## Řešení potíží
 

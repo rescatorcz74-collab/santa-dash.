@@ -64,7 +64,16 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
     -> "Přidat na plochu" -> "Instalovat".
     Hra dostane ikonu, poběží přes celou obrazovku a i bez internetu.
 
- 5) iPhone: Safari -> "Sdílet" -> "Přidat na plochu".
+ 5) iPhone: adresu otevřete v Safari -> "Sdílet" (čtvereček
+    se šipkou) -> "Přidat na plochu".
+    Když je na iPhonu zapnutý tichý režim, hra nebude slyšet -
+    hra na to při spuštění upozorní.
+
+ 6) Na telefonu hrajte NA ŠÍŘKU: nahoře je tenká lišta
+    s tlačítkem Pauza, šipky jsou vlevo vedle hrací plochy.
+    Restart úrovně, hudba, zvuk a návrat do menu jsou v pauze.
+    Testovací režim: v pauze Hudba, Zvuk, Hudba, Zvuk
+    a pak tlačítko Pauza v liště.
 
 
 --------------------------------------------------------------
@@ -134,8 +143,8 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
  4) Aby si telefony stáhly novou verzi, zvyšte v souboru sw.js
     číslo v řádku
-       const CACHE = 'santa-dash-v5.0';
-    (např. na v5.1).
+       const CACHE = 'santa-dash-v5.1';
+    (např. na v5.2).
 
 
 --------------------------------------------------------------

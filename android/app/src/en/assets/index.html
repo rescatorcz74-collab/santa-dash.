@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Christmas Santa Dash (8-bit)</title>
   <!-- Pixelová písma (bez internetu se použije záložní Courier New) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -103,6 +103,14 @@
       color: var(--accent-green);
       box-shadow: 0 0 16px rgba(6, 214, 160, 0.8) !important;
       outline-color: var(--accent-green) !important;
+    }
+
+    .ios-hint {
+      display: none;
+    }
+
+    body.ios-browser .ios-hint {
+      display: block;
     }
 
     .hidden-install {
@@ -693,6 +701,88 @@
         gap: 10px;
       }
     }
+
+    /* ---------------------------------------------------------
+       TELEFON NA ŠÍŘKU: tenká lišta, hra přes celou výšku,
+       dotykové šipky průsvitně v prázdném místě vlevo
+       --------------------------------------------------------- */
+    @media (orientation: landscape) and (max-height: 520px) {
+      body:not(.tv) #game-wrapper {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-areas: "hud hud" "pad canvas";
+        align-items: stretch;
+        max-width: none;
+        height: 100vh;
+        height: 100dvh;
+        padding: 3px max(6px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+        gap: 4px;
+      }
+
+      body:not(.tv) #hud {
+        grid-area: hud;
+        flex-wrap: nowrap;
+        padding: 2px 8px;
+        border-width: 2px;
+        font-size: 15px;
+        gap: 6px;
+      }
+
+      body:not(.tv) .hud-group {
+        flex-wrap: nowrap;
+        gap: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      /* Restart, hudba a zvuk jsou v pauze – v liště zůstane jen pauza */
+      body:not(.tv) #btn-restart,
+      body:not(.tv) #hud-song-select,
+      body:not(.tv) #btn-music,
+      body:not(.tv) #btn-mute {
+        display: none;
+      }
+
+      body:not(.tv) #btn-pause {
+        padding: 2px 10px;
+        font-size: 15px;
+      }
+
+      body:not(.tv) #canvas-container {
+        grid-area: canvas;
+        width: auto;
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        aspect-ratio: auto;
+        border-width: 2px;
+      }
+
+      /* Šipky vlevo vedle hrací plochy (nic nepřekrývají) */
+      body:not(.tv) #touch-controls {
+        grid-area: pad;
+        align-self: end;
+        width: auto;
+        max-width: none;
+        margin: 0 0 4px 0;
+      }
+
+      body:not(.tv) .dpad {
+        grid-template-columns: repeat(3, 46px);
+        grid-template-rows: repeat(2, 46px);
+        gap: 4px;
+      }
+
+      body:not(.tv) .dpad button {
+        font-size: 18px;
+      }
+
+      /* Šipky jen během hraní, ať nepřekrývají menu */
+      body:not(.tv):not(.in-game) #touch-controls {
+        display: none;
+      }
+    }
   </style>
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#070d1f" />
@@ -760,6 +850,7 @@
           <label for="start-name-input">👤 Player name:</label>
           <input type="text" id="start-name-input" class="name-input small" maxlength="10" autocomplete="off" spellcheck="false" placeholder="SANTA" />
         </div>
+        <p class="hs-note ios-hint" id="ios-install-hint">📲 On iPhone: tap Share ⬆️, then “Add to Home Screen”.</p>
         <p class="hs-note tv-only">Remote: OK = edit name (▲▼ letter, ◀▶ move), OK again = done.</p>
         <button type="button" class="retro-btn primary" id="btn-start">▶ PLAY</button>
         <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center">
@@ -4691,6 +4782,7 @@ Time bonus: +${timeBonus} pts`;
   }
   function gameLoop(timestamp) {
     var _a, _b;
+    document.body.classList.toggle("in-game", state === "PLAYING" || state === "INTRO" || state === "DYING" || state === "LEVEL_CLEAR" || state === "FLYING");
     pollGamepad();
     keepMenuFocus();
     if (!lastFrameTime) lastFrameTime = timestamp;
@@ -5001,6 +5093,7 @@ Time bonus: +${timeBonus} pts`;
   }
   function startNewGame(lvlIdx) {
     if (!devMode) lvlIdx = 0;
+    maybeShowIosSoundTip();
     const startInput = document.getElementById("start-name-input");
     playerName = cleanName(startInput.value).trim();
     startInput.value = playerName;
@@ -5134,12 +5227,12 @@ Time bonus: +${timeBonus} pts`;
   const DEV_SEQUENCE = ["music", "mute", "music", "mute", "pause"];
   let devClicks = [];
   let devToastTimer = null;
-  function showDevToast(text) {
+  function showDevToast(text, ms = 2200) {
     const el = document.getElementById("dev-toast");
     el.textContent = text;
     el.classList.remove("hidden");
     clearTimeout(devToastTimer);
-    devToastTimer = setTimeout(() => el.classList.add("hidden"), 2200);
+    devToastTimer = setTimeout(() => el.classList.add("hidden"), ms);
   }
   function setDevMode(on) {
     devMode = on;
@@ -5574,6 +5667,17 @@ Time bonus: +${timeBonus} pts`;
       touchStartY = e.touches[0].clientY;
     }
   }, { passive: true });
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  const IS_STANDALONE = window.navigator.standalone === true || window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches);
+  if (IS_IOS && !IS_STANDALONE && !TV_MODE) {
+    document.body.classList.add("ios-browser");
+  }
+  let iosSoundTipShown = false;
+  function maybeShowIosSoundTip() {
+    if (!IS_IOS || iosSoundTipShown) return;
+    iosSoundTipShown = true;
+    setTimeout(() => showDevToast("🔕 No sound? Turn off Silent Mode on your iPhone.", 4500), 600);
+  }
   let installPrompt = null;
   const installBtn = document.getElementById("btn-install");
   window.addEventListener("beforeinstallprompt", (e) => {
