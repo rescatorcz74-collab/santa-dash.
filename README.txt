@@ -159,8 +159,8 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
  4) Aby si telefony stáhly novou verzi, zvyšte v souboru sw.js
     číslo v řádku
-       const CACHE = 'santa-dash-v5.6';
-    (např. na v5.7).
+       const CACHE = 'santa-dash-v5.7';
+    (např. na v5.8).
 
 
 --------------------------------------------------------------

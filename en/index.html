@@ -328,6 +328,23 @@
       white-space: nowrap;
     }
 
+    /* úzký displej (telefon na výšku): role a jméno pod sebou */
+    @media (max-width: 520px) {
+      .credits-roll .cr-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        padding: 3px 0;
+        line-height: 1.25;
+      }
+      .credits-roll .cr-row span:first-child,
+      .credits-roll .cr-row span:last-child {
+        text-align: center;
+        white-space: normal;
+      }
+      .credits-roll .cr-row span:first-child { font-size: 17px; }
+    }
+
     .credits-roll .cr-list {
       font-size: 20px;
       line-height: 1.6;
@@ -687,7 +704,7 @@
     }
 
     #touch-right {
-      gap: 12px;
+      gap: 26px;
       margin-left: auto;
     }
 
@@ -958,6 +975,11 @@
         gap: 10px;
       }
 
+      /* u rozdělených šipek jukebox výš, ať se neplete pod palec */
+      body:not(.tv).touch-split #touch-right {
+        gap: clamp(22px, 9vh, 44px);
+      }
+
       body:not(.tv) .jukebox-btn {
         width: clamp(50px, 15vh, 64px);
         height: clamp(60px, 18vh, 78px);
@@ -1172,15 +1194,26 @@
             <div class="cr-row"><span>8-bit Synthesizer Engine</span><span>Gemini “Hydrogen”</span></div>
             <div class="cr-row"><span>Carol Arrangements &amp; Sound Effects</span><span>Claude</span></div>
             <div class="cr-row"><span>Credits Theme “Snowflake Pop”</span><span>Claude</span></div>
+            <div class="cr-row"><span>Jukebox &amp; Extra Carols</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Springboard Sound</span><span>freesound_community · Pixabay</span></div>
             <div class="cr-role">Christmas Carols <span class="cr-small">(public domain)</span></div>
-            <div class="cr-list">Jingle Bells · Silent Night · Deck the Halls<br>Good King Wenceslas · O Tannenbaum<br>We Wish You a Merry Christmas</div>
+            <div class="cr-list">Deck the Halls · Jingle Bells · Silent Night<br>Good King Wenceslas · O Tannenbaum<br>We Wish You a Merry Christmas<br>Nesem vám noviny <span class="cr-small">(Czech carol)</span><br>Pásli ovce Valaši <span class="cr-small">(Czech carol)</span><br>Joy to the World · Up on the Housetop</div>
 
             <div class="cr-head">— QUALITY ASSURANCE —</div>
             <div class="cr-row"><span>Lead Beta Tester</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Gameplay Balancing</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Bug Hunting</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Fairness Inspector</span><span>Jiri Smejc</span></div>
+
+            <div class="cr-head">— PLATFORMS &amp; DELIVERY —</div>
+            <div class="cr-row"><span>Web App (PWA)</span><span>iPhone · Android · PC</span></div>
+            <div class="cr-row"><span>Native App</span><span>Android TV · Google TV</span></div>
+            <div class="cr-row"><span>Touch Controls</span><span>Arrows · Cross · Joystick</span></div>
+            <div class="cr-row"><span>Hosting</span><span>GitHub Pages</span></div>
+            <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
+            <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
+            <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.7</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
