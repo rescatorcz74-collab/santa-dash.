@@ -544,6 +544,28 @@
     .overlay > :last-child { margin-bottom: auto; }
     .overlay { justify-content: flex-start; }
 
+    /* Přepínač jazyka na úvodní obrazovce (jen na webu – ne v souboru z disku ani na TV) */
+    .lang-switch {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 2;
+      padding: 6px 12px;
+      border: 2px solid #4fc3f7;
+      border-radius: 18px;
+      background: rgba(15, 30, 60, 0.9);
+      color: #e8f4ff;
+      font: inherit;
+      font-size: 15px;
+      text-decoration: none;
+      white-space: nowrap;
+      box-shadow: 0 0 10px rgba(79, 195, 247, 0.35);
+    }
+    .lang-switch:active { transform: translateY(1px); }
+    body.web-lang .lang-switch { display: inline-block; }
+    body.web-lang #screen-start h1 { margin-top: 34px; }
+
     .overlay.hidden {
       display: none !important;
     }
@@ -1175,6 +1197,7 @@
 
       <!-- Úvodní obrazovka -->
       <div class="overlay" id="screen-start">
+        <a class="lang-switch" id="lang-switch" href="en/" hreflang="en" lang="en" title="English version">🇬🇧 English</a>
         <h1>🎄 VÁNOČNÍ SANTA DASH 🎁</h1>
         <p>Prohrabej se závějemi sněhu, posbírej všechny vánoční dárky a uteč roztopeným krbem dřív, než vyprší čas!</p>
         <p>Pozor na padající <strong>vánoční stromky</strong> – můžeš je odtlačit do strany nebo jimi zavalit zlobivého zeleného skřítka.</p>
@@ -1326,7 +1349,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.11</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.12</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -5515,6 +5538,10 @@
       // TV režim zapíná aplikace pro Android TV (přidá „SantaDashTV“ do user agentu),
       // pro zkoušku v prohlížeči stačí přidat do adresy ?tv
       const TV_MODE = /SantaDashTV/i.test(navigator.userAgent) || /[?&]tv\b/.test(location.search);
+      // přepínač jazyka má smysl jen na webu, kde leží obě verze vedle sebe
+      if (/^https?:$/.test(location.protocol) && !TV_MODE && location.hostname !== 'appassets.androidplatform.net') {
+        document.body.classList.add('web-lang');
+      }
       if (TV_MODE) {
         document.body.classList.add('tv', 'kb-nav');
         // Na televizi se jméno zadává šipkami, systémová klávesnice by jen překážela
