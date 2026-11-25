@@ -740,17 +740,21 @@
     .swap-btn svg { width: 100%; height: 100%; display: block; }
     .swap-btn:active,
     .swap-btn.bump { transform: translateY(3px) scale(0.96); filter: drop-shadow(0 1px 0 #120a06); }
-    body:not(.touch-split) .swap-btn { display: none; }
+    body:not(.touch-split):not(.touch-strip) .swap-btn { display: none; }
     #touch-left { gap: 26px; }
 
     /* rozdělené šipky: přepínač a jukebox nad šipkami (na výšku by se vedle nevešly) */
     body.touch-split #touch-left,
-    body.touch-split #touch-right {
+    body.touch-split #touch-right,
+    body.touch-strip #touch-left,
+    body.touch-strip #touch-right {
       flex-direction: column;
       gap: 12px;
     }
     body.touch-split .swap-btn,
-    body.touch-split .jukebox-btn {
+    body.touch-split .jukebox-btn,
+    body.touch-strip .swap-btn,
+    body.touch-strip .jukebox-btn {
       width: 54px;
       height: 64px;
     }
@@ -778,6 +782,57 @@
       flex-direction: row;
       gap: 14px;
     }
+
+    /* Pásky – „slitá“ tlačítka: směr podle polohy palce, uprostřed klidová zóna */
+    body.touch-strip .pad-strip-v,
+    body.touch-strip .pad-strip-h {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      border-radius: 34px;
+      border: 3px solid #3a2410;
+      background: linear-gradient(90deg, #f0801f 0%, #ffc27a 45%, #f0801f 100%);
+      box-shadow: 0 5px 0 #5c300a, inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+      color: #3a1a04;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    body.touch-strip .pad-strip-v {
+      flex-direction: column;
+      width: 64px;
+      height: 170px;
+      padding: 10px 0;
+      background: linear-gradient(90deg, #d66d16 0%, #ffc27a 45%, #e8781b 100%);
+    }
+    body.touch-strip .pad-strip-h {
+      flex-direction: row;
+      width: 170px;
+      height: 64px;
+      padding: 0 12px;
+      background: linear-gradient(180deg, #ffc27a 0%, #f0801f 55%, #c9600f 100%);
+    }
+    .strip-end {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      pointer-events: none;
+      transition: background 0.05s, transform 0.05s;
+    }
+    .strip-end.pressed {
+      background: rgba(255, 255, 255, 0.55);
+      transform: scale(1.12);
+    }
+    .strip-notch {
+      pointer-events: none;
+      background: rgba(58, 26, 4, 0.55);
+      border-radius: 3px;
+    }
+    .pad-strip-v .strip-notch { width: 30px; height: 5px; }
+    .pad-strip-h .strip-notch { width: 5px; height: 30px; }
 
     body.touch-cross .pad-cross {
       display: grid;
@@ -1000,7 +1055,8 @@
         gap: 10px;
       }
 
-      body:not(.tv).touch-split #touch-left {
+      body:not(.tv).touch-split #touch-left,
+      body:not(.tv).touch-strip #touch-left {
         gap: clamp(22px, 9vh, 44px);
       }
 
@@ -1018,7 +1074,8 @@
       }
 
       /* u rozdělených šipek jukebox výš, ať se neplete pod palec */
-      body:not(.tv).touch-split #touch-right {
+      body:not(.tv).touch-split #touch-right,
+      body:not(.tv).touch-strip #touch-right {
         gap: clamp(22px, 9vh, 44px);
       }
 
@@ -1037,6 +1094,16 @@
       body:not(.tv).touch-split .pad-split-v,
       body:not(.tv).touch-split .pad-split-h {
         gap: 10px;
+      }
+
+      body:not(.tv).touch-strip .pad-strip-v {
+        width: clamp(56px, 17vh, 70px);
+        height: clamp(130px, 44vh, 190px);
+      }
+
+      body:not(.tv).touch-strip .pad-strip-h {
+        width: clamp(130px, 44vh, 190px);
+        height: clamp(56px, 17vh, 70px);
       }
 
       body:not(.tv).touch-cross .pad-cross {
@@ -1137,7 +1204,7 @@
           <div class="song-select">
             <button type="button" class="song-btn scheme-btn" data-scheme="split">◀▶ ▲▼ Split arrows</button>
             <button type="button" class="song-btn scheme-btn" data-scheme="cross">✚ Cross pad</button>
-            <button type="button" class="song-btn scheme-btn" data-scheme="stick">🕹 Joystick</button>
+            <button type="button" class="song-btn scheme-btn" data-scheme="strip">▮▬ Strips</button>
           </div>
         </div>
         <div class="start-name">
@@ -1240,7 +1307,7 @@
             <div class="cr-row"><span>Carol Arrangements &amp; Sound Effects</span><span>Claude</span></div>
             <div class="cr-row"><span>Credits Theme “Snowflake Pop”</span><span>Claude</span></div>
             <div class="cr-row"><span>Jukebox &amp; Extra Carols</span><span>Jiri Smejc</span></div>
-            <div class="cr-row"><span>Split Arrows &amp; Arrow Swap</span><span>Jiri Smejc</span></div>
+            <div class="cr-row"><span>Split Arrows, Strips &amp; Arrow Swap</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Springboard Sound</span><span>freesound_community · Pixabay</span></div>
             <div class="cr-role">Christmas Carols <span class="cr-small">(public domain)</span></div>
             <div class="cr-list">Deck the Halls · Jingle Bells · Silent Night<br>Good King Wenceslas · O Tannenbaum<br>We Wish You a Merry Christmas<br>Nesem vám noviny <span class="cr-small">(Czech carol)</span><br>Pásli ovce Valaši <span class="cr-small">(Czech carol)</span><br>Joy to the World · Up on the Housetop</div>
@@ -1254,12 +1321,12 @@
             <div class="cr-head">— PLATFORMS &amp; DELIVERY —</div>
             <div class="cr-row"><span>Web App (PWA)</span><span>iPhone · Android · PC</span></div>
             <div class="cr-row"><span>Native App</span><span>Android TV · Google TV</span></div>
-            <div class="cr-row"><span>Touch Controls</span><span>Arrows · Cross · Joystick</span></div>
+            <div class="cr-row"><span>Touch Controls</span><span>Arrows · Cross · Strips</span></div>
             <div class="cr-row"><span>Hosting</span><span>GitHub Pages</span></div>
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.9</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.11</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -1326,6 +1393,11 @@
             <path d="M46 48 H20 L20 40 L10 52 L20 64 L20 56 H46 Z" fill="#ffc27a" stroke="#2a0f05" stroke-width="2" stroke-linejoin="round"/>
           </svg>
         </button>
+        <div class="pad pad-strip-v" aria-label="Up and down strip">
+          <span class="strip-end" data-dir="up">▲</span>
+          <span class="strip-notch"></span>
+          <span class="strip-end" data-dir="down">▼</span>
+        </div>
         <div class="pad pad-split-v">
           <button type="button" data-dir="up" aria-label="Up">▲</button>
           <button type="button" data-dir="down" aria-label="Down">▼</button>
@@ -1353,6 +1425,11 @@
             <rect x="3" y="66" width="54" height="6" rx="2" fill="#2a0f05"/>
           </svg>
         </button>
+        <div class="pad pad-strip-h" aria-label="Left and right strip">
+          <span class="strip-end" data-dir="left">◀</span>
+          <span class="strip-notch"></span>
+          <span class="strip-end" data-dir="right">▶</span>
+        </div>
         <div class="pad pad-split-h">
           <button type="button" data-dir="left" aria-label="Left">◀</button>
           <button type="button" data-dir="right" aria-label="Right">▶</button>
@@ -2620,6 +2697,7 @@
       let hasLid = false;
       let hasLidLevel = false;
       let lidPlaced = false;
+      let ovenOpened = false;
       let ballTimer = 0;
       const BALL_INTERVAL = 190; // koule padá o něco pomaleji, než chodí Santa (125 ms)
       let flight = null;
@@ -2706,6 +2784,7 @@
         hasLid = false;
         hasLidLevel = false;
         lidPlaced = false;
+        ovenOpened = false;
         ballTimer = 0;
         flight = null;
 
@@ -2805,7 +2884,7 @@
         const lidBox = document.getElementById('hud-lid-box');
         lidBox.classList.toggle('hidden-item', !hasLidLevel);
         lidBox.classList.toggle('ready', hasLid || lidPlaced);
-        document.getElementById('hud-lid').textContent = lidPlaced ? 'BAKING' : (hasLid ? 'GOT IT' : '–');
+        document.getElementById('hud-lid').textContent = ovenOpened ? 'DONE' : (lidPlaced ? 'BAKING' : (hasLid ? 'GOT IT' : '–'));
         const keyBox = document.getElementById('hud-key-box');
         keyBox.classList.toggle('hidden-item', !hasKeyLevel);
         keyBox.classList.toggle('ready', hasKey);
@@ -3350,6 +3429,17 @@
           hudFlashTimer = 1.4;
           audio.playDoughGifts();
           spawnFloatingText(cells[0].x, cells[0].y, `DOUGH BAKED: ${cells.length} PRESENTS! 🎁`);
+          // po upečení poklop odskočí, ať se Santa dostane k dárkům
+          const mouth = lvl.ovenMouth;
+          if (mouth && grid[mouth.y][mouth.x] === TILE.LID) {
+            grid[mouth.y][mouth.x] = TILE.EMPTY;
+            falling[mouth.y][mouth.x] = false;
+            ovenOpened = true;
+            spawnParticles(mouth.x, mouth.y, '#9aa1b5', 14);
+            spawnParticles(mouth.x, mouth.y, '#ffd166', 8);
+            audio.playKey();
+            spawnFloatingText(mouth.x, mouth.y - 1, 'THE LID POPPED OFF – OVEN IS OPEN!');
+          }
           updateHUD();
           return;
         }
@@ -5773,12 +5863,13 @@
       const IS_TOUCH = (window.matchMedia && matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in window);
       if (IS_TOUCH && !TV_MODE) document.body.classList.add('touch-device');
 
-      const SCHEMES = ['split', 'cross', 'stick'];
-      const SCHEME_NAMES = { split: '◀▶ ▲▼ Arrows', cross: '✚ Cross pad', stick: '🕹 Joystick' };
+      const SCHEMES = ['split', 'cross', 'strip'];
+      const SCHEME_NAMES = { split: '◀▶ ▲▼ Arrows', cross: '✚ Cross pad', strip: '▮▬ Strips' };
       let touchScheme = 'split';
       try {
         const saved = localStorage.getItem('santaDash.touchScheme');
         if (SCHEMES.includes(saved)) touchScheme = saved;
+        else if (saved === 'stick') touchScheme = 'strip'; // páka nahrazena pásky
       } catch (e) {}
 
       // Prohození šipek: ▲▼ a ◀▶ si vymění strany (volba se pamatuje)
@@ -5787,10 +5878,12 @@
       function applyArrowSwap() {
         const L = document.getElementById('touch-left');
         const R = document.getElementById('touch-right');
-        const v = document.querySelector('.pad-split-v');
-        const h = document.querySelector('.pad-split-h');
-        if (arrowsSwapped) { L.appendChild(h); R.appendChild(v); }
-        else { L.appendChild(v); R.appendChild(h); }
+        [['.pad-split-v', '.pad-split-h'], ['.pad-strip-v', '.pad-strip-h']].forEach(([sv, sh]) => {
+          const v = document.querySelector(sv);
+          const h = document.querySelector(sh);
+          if (arrowsSwapped) { L.appendChild(h); R.appendChild(v); }
+          else { L.appendChild(v); R.appendChild(h); }
+        });
         document.body.classList.toggle('arrows-swapped', arrowsSwapped);
         setTimeout(resizeCanvas, 0);
       }
@@ -5829,14 +5922,14 @@
         if (dir === touchDir) return;
         if (touchDir) keys[DIR_INFO[touchDir].code] = false;
         touchDir = dir;
-        document.querySelectorAll('.pad button.pressed').forEach(b => b.classList.remove('pressed'));
+        document.querySelectorAll('.pad .pressed').forEach(b => b.classList.remove('pressed'));
         if (dir) {
           const info = DIR_INFO[dir];
           if (state === 'INTRO') state = 'PLAYING';
           keys[info.code] = true;
           queuedDir = { dx: info.dx, dy: info.dy };
           touchRepeatAt = performance.now() + TOUCH_REPEAT_DELAY;
-          document.querySelectorAll(`.pad button[data-dir="${dir}"]`).forEach(b => b.classList.add('pressed'));
+          document.querySelectorAll(`.pad [data-dir="${dir}"]`).forEach(b => b.classList.add('pressed'));
           if (navigator.vibrate) {
             try { navigator.vibrate(12); } catch (e) {}
           }
@@ -5870,6 +5963,15 @@
         }
         if (pad.classList.contains('pad-split-v')) {
           return dy < 0 ? 'up' : 'down';
+        }
+        // pásky: směr podle poloviny, uprostřed klidová zóna (zastavení bez zvednutí palce)
+        if (pad.classList.contains('pad-strip-v')) {
+          if (Math.abs(dy) < r.height * 0.08) return null;
+          return dy < 0 ? 'up' : 'down';
+        }
+        if (pad.classList.contains('pad-strip-h')) {
+          if (Math.abs(dx) < r.width * 0.08) return null;
+          return dx < 0 ? 'left' : 'right';
         }
         // kříž: malá mrtvá zóna uprostřed, jinak převažující osa
         const dead = Math.min(r.width, r.height) * 0.1;

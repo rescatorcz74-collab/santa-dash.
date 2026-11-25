@@ -79,7 +79,9 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
     kdykoli v pauze tlačítkem "Ovládání":
       - Rozdělené šipky: vlevo nahoru/dolů, vpravo vlevo/vpravo
       - Kříž: klasický kříž vlevo
-      - Páčka: palec kamkoli do levé poloviny plochy a táhnout
+      - Pásky: vlevo svislý (nahoru/dolů), vpravo vodorovný
+        (vlevo/vpravo); šoupáním plynule, uprostřed Santa
+        stojí, ťuknutím na konec udělá krok
     Santa jde, dokud tlačítko držíte; palcem lze přejet
     z jedné šipky na druhou bez zvednutí, u kříže
     stačí palcem šoupat do všech čtyř směrů.
@@ -91,7 +93,7 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
     z 10 vánočních melodií, hra se nezastaví (vypnutou hudbu
     zapne). Na klávesnici totéž dělá klávesa J.
 
- 9) U rozdělených šipek je vlevo nahoře tlačítko
+ 9) U rozdělených šipek a pásků je vlevo nahoře tlačítko
     Prohodit šipky - vymění nahoru/dolů a vlevo/vpravo
     mezi stranami. Volba se pamatuje.
 
@@ -163,8 +165,8 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
  4) Aby si telefony stáhly novou verzi, zvyšte v souboru sw.js
     číslo v řádku
-       const CACHE = 'santa-dash-v5.9';
-    (např. na v5.10).
+       const CACHE = 'santa-dash-v5.11';
+    (např. na v5.12).
 
 
 --------------------------------------------------------------

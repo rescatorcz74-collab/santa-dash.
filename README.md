@@ -43,12 +43,12 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 7. Dotykové ovládání si hráč vybere na úvodní obrazovce, nebo kdykoli v pauze tlačítkem **🎮 Ovládání**:
    - **Rozdělené šipky** – vlevo ▲▼, vpravo ◀▶ (každý palec má svou osu),
    - **Kříž** – klasický kříž vlevo,
-   - **Páčka** – položte palec kamkoli do levé poloviny plochy a táhněte.
+   - **Pásky** – vlevo svislý pásek ▲▼, vpravo vodorovný ◀▶; šoupáním palce plynule, uprostřed pásku Santa stojí, ťuknutím na konec udělá krok.
    Santa jde, dokud tlačítko držíte; palcem lze přejet z jedné šipky na druhou bez zvednutí, u kříže stačí palcem šoupat do všech čtyř směrů. Krátké klepnutí znamená přesně jeden krok.
    Volba se pamatuje. Na Androidu tlačítka při stisku krátce zavibrují.
 8. **Jukebox** vpravo nad šipkami přepne klepnutím na další z 10 vánočních melodií (bez pauzy; vypnutou hudbu zapne).
    Na klávesnici totéž dělá klávesa **J**.
-9. U rozdělených šipek je vlevo nahoře tlačítko **⇄ Prohodit šipky** – vymění ▲▼ a ◀▶ mezi stranami (volba se pamatuje).
+9. U rozdělených šipek a pásků je vlevo nahoře tlačítko **⇄ Prohodit šipky** – vymění ▲▼ a ◀▶ mezi stranami (volba se pamatuje).
 
 ## 3. Aplikace pro Android TV (APK)
 
@@ -91,7 +91,7 @@ V pauze jsou tlačítka **Restart úrovně, Hudba, Zvuk a Hlavní menu**.
 2. Web se aktualizuje sám, nové APK se samo sestaví v **Actions**.
 3. Nové APK nainstalujte na box přes staré – rekordy zůstanou zachované.
 4. Aby si telefony stáhly novou verzi, zvyšte v souboru `sw.js` číslo v řádku
-   `const CACHE = 'santa-dash-v5.9';` (např. na `v5.10`).
+   `const CACHE = 'santa-dash-v5.11';` (např. na `v5.12`).
 
 ## Řešení potíží
 
