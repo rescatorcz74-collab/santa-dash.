@@ -723,6 +723,37 @@
       transition: transform 0.06s;
     }
     .jukebox-btn svg { width: 100%; height: 100%; display: block; }
+
+    /* Prohození šipek (jen u rozdělených šipek) */
+    .swap-btn {
+      width: 62px;
+      height: 74px;
+      padding: 2px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      flex: 0 0 auto;
+      transition: transform 0.06s;
+      filter: drop-shadow(0 4px 0 #120a06);
+    }
+    .swap-btn svg { width: 100%; height: 100%; display: block; }
+    .swap-btn:active,
+    .swap-btn.bump { transform: translateY(3px) scale(0.96); filter: drop-shadow(0 1px 0 #120a06); }
+    body:not(.touch-split) .swap-btn { display: none; }
+    #touch-left { gap: 26px; }
+
+    /* rozdělené šipky: přepínač a jukebox nad šipkami (na výšku by se vedle nevešly) */
+    body.touch-split #touch-left,
+    body.touch-split #touch-right {
+      flex-direction: column;
+      gap: 12px;
+    }
+    body.touch-split .swap-btn,
+    body.touch-split .jukebox-btn {
+      width: 54px;
+      height: 64px;
+    }
     .jukebox-btn:active,
     .jukebox-btn.bump { transform: translateY(3px) scale(0.96); box-shadow: 0 1px 0 #120a06; }
     .jukebox-btn .neon { animation: jukeGlow 1.6s ease-in-out infinite; }
@@ -965,6 +996,17 @@
         grid-area: padl;
         align-self: end;
         margin-bottom: 6px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      body:not(.tv).touch-split #touch-left {
+        gap: clamp(22px, 9vh, 44px);
+      }
+
+      body:not(.tv) .swap-btn {
+        width: clamp(50px, 15vh, 64px);
+        height: clamp(60px, 18vh, 78px);
       }
 
       body:not(.tv) #touch-right {
@@ -1029,6 +1071,7 @@
         <div class="hud-item">Score: <span class="val" id="hud-score">0</span></div>
         <div class="hud-item hidden-item" id="hud-workshop-box" title="Santa's Workshop">🔨 Workshop: <span class="val" id="hud-workshop">idle</span></div>
         <div class="hud-item hidden-item" id="hud-plank-box" title="Catapult plank">🪵 Plank: <span class="val" id="hud-plank">–</span></div>
+        <div class="hud-item hidden-item" id="hud-lid-box" title="Oven lid">🍳 Lid: <span class="val" id="hud-lid">–</span></div>
         <div class="hud-item hidden-item" id="hud-key-box" title="Gate key">🔑 Key: <span class="val" id="hud-key">–</span></div>
         <div class="hud-item">Lives: <span class="val" id="hud-lives">❤️❤️❤️</span></div>
       </div>
@@ -1121,6 +1164,7 @@
           <span>👺 Elf: Drop a tree on it = 9 presents!</span>
           <span>🔨 Workshop: A tree falling through becomes a present (and a present becomes a tree!)</span>
           <span>🍪 Gingerbread dough: It grows! Seal it in = presents, let it overgrow = trees</span>
+          <span>🍳 Oven lid: Stand above the oven opening and press down – the oven bakes fast</span>
           <span>🕹️ Lever: Powers up the teleport</span>
           <span>💎 Ice stone: Teleports you to the other stone</span>
           <span>🔑 Key &amp; ▦ Gate: The key unlocks the gate</span>
@@ -1182,6 +1226,7 @@
             <div class="cr-row"><span>Teleport, Lever, Key &amp; Gate</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Snowball Catapult</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Christmas Star</span><span>Jiri Smejc</span></div>
+            <div class="cr-row"><span>Gingerbread Oven Lid</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Santa's Workshop &amp; Gingerbread Dough</span><span>Claude</span></div>
             <div class="cr-row"><span>Reindeer &amp; Sleigh</span><span>Gemini “Hydrogen”</span></div>
 
@@ -1195,6 +1240,7 @@
             <div class="cr-row"><span>Carol Arrangements &amp; Sound Effects</span><span>Claude</span></div>
             <div class="cr-row"><span>Credits Theme “Snowflake Pop”</span><span>Claude</span></div>
             <div class="cr-row"><span>Jukebox &amp; Extra Carols</span><span>Jiri Smejc</span></div>
+            <div class="cr-row"><span>Split Arrows &amp; Arrow Swap</span><span>Jiri Smejc</span></div>
             <div class="cr-row"><span>Springboard Sound</span><span>freesound_community · Pixabay</span></div>
             <div class="cr-role">Christmas Carols <span class="cr-small">(public domain)</span></div>
             <div class="cr-list">Deck the Halls · Jingle Bells · Silent Night<br>Good King Wenceslas · O Tannenbaum<br>We Wish You a Merry Christmas<br>Nesem vám noviny <span class="cr-small">(Czech carol)</span><br>Pásli ovce Valaši <span class="cr-small">(Czech carol)</span><br>Joy to the World · Up on the Housetop</div>
@@ -1213,7 +1259,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.7</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.9</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -1273,6 +1319,13 @@
     <!-- Dotykový D-pad pro mobily a tablety -->
     <div id="touch-controls">
       <div class="touch-panel" id="touch-left">
+        <button type="button" class="swap-btn" id="btn-swap-arrows" aria-label="Swap arrows" title="Swap left and right arrows">
+          <svg viewBox="0 0 60 74" aria-hidden="true">
+            <rect x="4" y="6" width="52" height="62" rx="10" fill="#241a14" stroke="#5c300a" stroke-width="2"/>
+            <path d="M14 26 H40 L40 18 L50 30 L40 42 L40 34 H14 Z" fill="#f0801f" stroke="#2a0f05" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M46 48 H20 L20 40 L10 52 L20 64 L20 56 H46 Z" fill="#ffc27a" stroke="#2a0f05" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <div class="pad pad-split-v">
           <button type="button" data-dir="up" aria-label="Up">▲</button>
           <button type="button" data-dir="down" aria-label="Down">▼</button>
@@ -2273,27 +2326,29 @@
         },
         {
           name: "5. Gingerbread Oven",
-          hint: "The dough is rising! Block its way with a tree and it bakes into presents.",
+          hint: "The dough is rising! Grab the lid from the elf's room, stand above the oven opening and press down.",
           required: 22,
           time: 170,
           doughMax: 30,
-          doughDelay: 12,
-          doughRate: 0.03,
-          doughSealedRate: 0.1,
-          doughFastAfter: 80,
+          doughDelay: 20,
+          doughRate: 0.015,
+          doughFastAfter: 140,
+          doughFastRate: 0.04,
+          ovenMouth: { x: 12, y: 4 },   // otvor pece – sem patří poklop
+          doughLidRate: 0.45,           // s poklopem se pec upeče za pár vteřin
           map: [
             "######################",
             "#S..T....G...T...G...#",
-            "#...G.......T.....T..#",
+            "#...G.............T..#",
             "#..T..G..........G...#",
             "#.......####.####....#",
             "#..G....#  DD  #..G..#",
             "#..T....#      #..T..#",
             "#.G.....########.....#",
-            "#....T.....G.....G...#",
-            "#..T....T......T..##.#",
-            "#..G....G..G......#..#",
-            "#.....T..........T#G.#",
+            "#....T.....G..G#######",
+            "#..T....T......#  M ##",
+            "#..G....G..G...U ## G#",
+            "#.....T.....G..#    ##",
             "#..G...G.....G......E#",
             "######################"
           ]
@@ -2491,7 +2546,9 @@
         PLANK_C: 21,  // Prkno katapultu – střed (leží na kládě)
         PLANK_R: 22,  // Prkno katapultu – pravý konec
         AIR: 23,      // Propast – Santa do ní nevkročí, ale přeletí ji
-        STAR: 24      // Vánoční hvězda – vzácný bonus, 1× za úroveň
+        STAR: 24,     // Vánoční hvězda – vzácný bonus, 1× za úroveň
+        LID_ITEM: 25, // Poklop na pec ležící na zemi (Santa ho sebere)
+        LID: 26       // Poklop přiklopený na otvoru pece
       };
 
       // =========================================================
@@ -2560,6 +2617,9 @@
       let hasPlank = false;
       let hasPlankLevel = false;
       let plankPlaced = false;
+      let hasLid = false;
+      let hasLidLevel = false;
+      let lidPlaced = false;
       let ballTimer = 0;
       const BALL_INTERVAL = 190; // koule padá o něco pomaleji, než chodí Santa (125 ms)
       let flight = null;
@@ -2643,6 +2703,9 @@
         hasPlank = false;
         hasPlankLevel = false;
         plankPlaced = false;
+        hasLid = false;
+        hasLidLevel = false;
+        lidPlaced = false;
         ballTimer = 0;
         flight = null;
 
@@ -2705,6 +2768,10 @@
                 grid[y][x] = TILE.PLANK_ITEM;
                 hasPlankLevel = true;
                 break;
+              case 'U':
+                grid[y][x] = TILE.LID_ITEM;
+                hasLidLevel = true;
+                break;
               case 'X':
                 grid[y][x] = TILE.GATE;
                 hasKeyLevel = true;
@@ -2735,6 +2802,10 @@
         plankBox.classList.toggle('hidden-item', !hasPlankLevel);
         plankBox.classList.toggle('ready', hasPlank || plankPlaced);
         document.getElementById('hud-plank').textContent = plankPlaced ? 'CATAPULT' : (hasPlank ? 'GOT IT' : '–');
+        const lidBox = document.getElementById('hud-lid-box');
+        lidBox.classList.toggle('hidden-item', !hasLidLevel);
+        lidBox.classList.toggle('ready', hasLid || lidPlaced);
+        document.getElementById('hud-lid').textContent = lidPlaced ? 'BAKING' : (hasLid ? 'GOT IT' : '–');
         const keyBox = document.getElementById('hud-key-box');
         keyBox.classList.toggle('hidden-item', !hasKeyLevel);
         keyBox.classList.toggle('ready', hasKey);
@@ -2879,7 +2950,7 @@
       // Hvězda se objeví jen na sněhu (sníh sám nic nepouští dál, takže hvězda nic nezablokuje),
       // a to mezi nejvzdálenějšími místy, kam Santa může dojít. Vzdálenost = délka cesty.
       function trySpawnStar() {
-        const walkable = new Set([TILE.EMPTY, TILE.SNOW, TILE.GIFT, TILE.CANDY_CANE, TILE.KEY, TILE.PLANK_ITEM]);
+        const walkable = new Set([TILE.EMPTY, TILE.SNOW, TILE.GIFT, TILE.CANDY_CANE, TILE.KEY, TILE.PLANK_ITEM, TILE.LID_ITEM]);
         const dist = Array.from({ length: ROWS }, () => Array(COLS).fill(-1));
         const queue = [[player.x, player.y]];
         dist[player.y][player.x] = 0;
@@ -2958,7 +3029,8 @@
       const EXPLOSION_PROOF = new Set([
         TILE.WALL, TILE.EXIT, TILE.SANTA, TILE.REINDEER, TILE.SLEIGH, TILE.WORKSHOP,
         TILE.LEVER, TILE.TELEPORT, TILE.KEY, TILE.GATE,
-        TILE.BALL, TILE.LOG, TILE.PLANK_ITEM, TILE.PLANK_L, TILE.PLANK_C, TILE.PLANK_R, TILE.AIR, TILE.STAR
+        TILE.BALL, TILE.LOG, TILE.PLANK_ITEM, TILE.PLANK_L, TILE.PLANK_C, TILE.PLANK_R, TILE.AIR, TILE.STAR,
+        TILE.LID_ITEM, TILE.LID
       ]);
 
       function explodeEnemy(ex, ey) {
@@ -3295,11 +3367,15 @@
           return;
         }
 
+        const baking = !!(lvl.ovenMouth && lidPlaced);
+
         // Na začátku úrovně těsto chvíli jen „kyne“, aby se hráč stihl rozkoukat
-        if (levelElapsed < (lvl.doughDelay ?? 6)) return;
+        // (přiklopená pec peče hned)
+        if (!baking && levelElapsed < (lvl.doughDelay ?? 6)) return;
 
         const fast = levelElapsed >= (lvl.doughFastAfter ?? 60);
         let chance = fast ? (lvl.doughFastRate || 0.09) : (lvl.doughRate || 0.025);
+        if (baking) chance = lvl.doughLidRate || 0.4;
 
         // Zavřená pec se rozpálí: když těsto nemá kudy utéct do sněhu, peče se rychleji
         if (lvl.doughSealedRate && doughIsSealed(cells, 24)) {
@@ -3349,6 +3425,15 @@
         const ny = player.y + dy;
         if (!grid[ny] || grid[ny][nx] === undefined) return;
         const target = grid[ny][nx];
+
+        // Poklop: Santa stojí nad otvorem pece a zmáčkne dolů → přiklopí pec
+        const mouth = LEVELS[currentLevelIdx].ovenMouth;
+        if (dy === 1 && hasLid && mouth && nx === mouth.x && ny === mouth.y &&
+            (target === TILE.EMPTY || target === TILE.SNOW || target === TILE.DOUGH)) {
+          placeLid(nx, ny);
+          pushCounter = 0;
+          return;
+        }
 
         if (target === TILE.WALL) {
           pushCounter = 0;
@@ -3454,6 +3539,16 @@
               pushCounter = 0;
             }
           }
+        }
+        else if (target === TILE.LID_ITEM) {
+          moveSantaTo(nx, ny);
+          hasLid = true;
+          score += 100;
+          audio.playKey();
+          spawnParticles(nx, ny, '#8d93a6', 12);
+          spawnFloatingText(nx, ny, 'GOT THE LID! PUT IT ON THE OVEN 🔥');
+          updateHUD();
+          pushCounter = 0;
         }
         else if (target === TILE.PLANK_ITEM) {
           moveSantaTo(nx, ny);
@@ -3570,6 +3665,43 @@
       // KATAPULT: kláda + prkno (3 políčka). Santa stojí nad jedním koncem,
       // sněhová koule dopadne na druhý konec → Santa letí po oblouku.
       // ---------------------------------------------------------
+      // Přiklopení pece: otvor zaklapne poklop (těsto v otvoru zatlačí zpátky dovnitř)
+      function placeLid(mx, my) {
+        grid[my][mx] = TILE.LID;
+        falling[my][mx] = false;
+        // vnitřek pece = vše, kam se z prostoru pod poklopem dostane těsto
+        const inside = new Set();
+        const stack = [[mx, my + 1]];
+        while (stack.length) {
+          const [x, y] = stack.pop();
+          const t = grid[y]?.[x];
+          const k = y * COLS + x;
+          if (inside.has(k) || !(t === TILE.EMPTY || t === TILE.DOUGH)) continue;
+          inside.add(k);
+          for (const d of DIRS4) stack.push([x + d.dx, y + d.dy]);
+        }
+        // těsto, které stihlo utéct ven, poklop odřízne
+        for (let y = 1; y < ROWS - 1; y++) {
+          for (let x = 1; x < COLS - 1; x++) {
+            if (grid[y][x] === TILE.DOUGH && !inside.has(y * COLS + x)) {
+              grid[y][x] = TILE.EMPTY;
+              spawnParticles(x, y, '#c08552', 6);
+            }
+          }
+        }
+        hasLid = false;
+        lidPlaced = true;
+        score += 150;
+        audio.playPlank();
+        audio.playWorkshopOn();
+        shake(0.25, 4);
+        spawnParticles(mx, my, '#8d93a6', 14);
+        spawnParticles(mx, my, '#ff9f1c', 10);
+        spawnFloatingText(mx, my - 1, 'OVEN LIDDED – BAKING! 🔥');
+        doughSealedAnnounced = true;
+        updateHUD();
+      }
+
       function placePlank(lx, ly) {
         const py = ly - 1;
         const left = grid[py]?.[lx - 1];
@@ -4328,6 +4460,48 @@
           ring(3, '#7f4f24');
           ctx.fillStyle = '#3e2410';
           ctx.fillRect(cx + 4, cy - 8, 2, 6);
+        }
+        else if (type === TILE.LID_ITEM) {
+          // Litinový poklop ležící na zemi (pohupuje se, mosazná úchytka)
+          const bob = Math.round(Math.sin(timeSec * 4 + gx) * 2);
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          ctx.fillRect(px + 8, py + 34, 28, 4);
+          ctx.fillStyle = '#17181d';
+          ctx.fillRect(px + 5, py + 24 + bob, 34, 8);
+          ctx.fillStyle = '#3c404b';
+          ctx.fillRect(px + 7, py + 20 + bob, 30, 9);
+          ctx.fillStyle = '#5d6271';
+          ctx.fillRect(px + 9, py + 18 + bob, 26, 5);
+          ctx.fillStyle = '#9aa1b5';
+          ctx.fillRect(px + 11, py + 18 + bob, 9, 2);
+          ctx.fillStyle = '#17181d';
+          ctx.fillRect(px + 17, py + 12 + bob, 10, 6);
+          ctx.fillStyle = '#e0b43a';
+          ctx.fillRect(px + 19, py + 13 + bob, 6, 3);
+          if (Math.floor(timeSec * 3) % 2 === 0) {
+            ctx.fillStyle = '#ffd166';
+            ctx.fillRect(px + 36, py + 8 + bob, 3, 3);
+          }
+        }
+        else if (type === TILE.LID) {
+          // Poklop přiklopený na peci – litinová deska s nýty, pod ní žhne pec
+          ctx.fillStyle = '#17181d';
+          ctx.fillRect(px, py + 4, 44, 36);
+          ctx.fillStyle = '#3c404b';
+          ctx.fillRect(px + 2, py + 6, 40, 30);
+          ctx.fillStyle = '#5d6271';
+          ctx.fillRect(px + 2, py + 6, 40, 4);
+          ctx.fillStyle = '#9aa1b5';
+          [[6, 12], [35, 12], [6, 29], [35, 29]].forEach(([rx, ry]) => ctx.fillRect(px + rx, py + ry, 3, 3));
+          ctx.fillStyle = '#17181d';
+          ctx.fillRect(px + 14, py + 17, 16, 7);
+          ctx.fillStyle = '#e0b43a';
+          ctx.fillRect(px + 18, py + 18, 8, 4);
+          if (doughActive) {
+            const a = 0.45 + 0.35 * Math.sin(timeSec * 9);
+            ctx.fillStyle = `rgba(255, 130, 40, ${a.toFixed(2)})`;
+            ctx.fillRect(px + 2, py + 36, 40, 4);
+          }
         }
         else if (type === TILE.PLANK_ITEM) {
           // Prkno ležící na zemi (šikmo, pohupuje se)
@@ -5607,6 +5781,34 @@
         if (SCHEMES.includes(saved)) touchScheme = saved;
       } catch (e) {}
 
+      // Prohození šipek: ▲▼ a ◀▶ si vymění strany (volba se pamatuje)
+      let arrowsSwapped = false;
+      try { arrowsSwapped = localStorage.getItem('santaDash.arrowsSwapped') === '1'; } catch (e) {}
+      function applyArrowSwap() {
+        const L = document.getElementById('touch-left');
+        const R = document.getElementById('touch-right');
+        const v = document.querySelector('.pad-split-v');
+        const h = document.querySelector('.pad-split-h');
+        if (arrowsSwapped) { L.appendChild(h); R.appendChild(v); }
+        else { L.appendChild(v); R.appendChild(h); }
+        document.body.classList.toggle('arrows-swapped', arrowsSwapped);
+        setTimeout(resizeCanvas, 0);
+      }
+      applyArrowSwap();
+      document.getElementById('btn-swap-arrows').addEventListener('click', (e) => {
+        e.preventDefault();
+        releaseTouchDir();
+        arrowsSwapped = !arrowsSwapped;
+        try { localStorage.setItem('santaDash.arrowsSwapped', arrowsSwapped ? '1' : '0'); } catch (err) {}
+        applyArrowSwap();
+        showDevToast(arrowsSwapped ? '⇄ Arrows swapped: left ◀▶, right ▲▼' : '⇄ Arrows: left ▲▼, right ◀▶', 1600);
+        const b = e.currentTarget;
+        b.classList.add('bump');
+        setTimeout(() => b.classList.remove('bump'), 120);
+        b.blur();
+        if (navigator.vibrate) { try { navigator.vibrate(15); } catch (err) {} }
+      });
+
       function applyTouchScheme(sch) {
         touchScheme = sch;
         SCHEMES.forEach(x => document.body.classList.toggle('touch-' + x, x === sch));
@@ -5678,7 +5880,7 @@
 
       document.querySelectorAll('.touch-panel').forEach(panel => {
         panel.addEventListener('pointerdown', (e) => {
-          if (e.target.closest && e.target.closest('.jukebox-btn')) return;
+          if (e.target.closest && e.target.closest('.jukebox-btn, .swap-btn')) return;
           e.preventDefault();
           document.body.classList.remove('kb-nav');
           try { panel.setPointerCapture(e.pointerId); } catch (err) {}

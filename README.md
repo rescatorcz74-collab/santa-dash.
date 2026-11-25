@@ -48,6 +48,7 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
    Volba se pamatuje. Na Androidu tlačítka při stisku krátce zavibrují.
 8. **Jukebox** vpravo nad šipkami přepne klepnutím na další z 10 vánočních melodií (bez pauzy; vypnutou hudbu zapne).
    Na klávesnici totéž dělá klávesa **J**.
+9. U rozdělených šipek je vlevo nahoře tlačítko **⇄ Prohodit šipky** – vymění ▲▼ a ◀▶ mezi stranami (volba se pamatuje).
 
 ## 3. Aplikace pro Android TV (APK)
 
@@ -90,7 +91,7 @@ V pauze jsou tlačítka **Restart úrovně, Hudba, Zvuk a Hlavní menu**.
 2. Web se aktualizuje sám, nové APK se samo sestaví v **Actions**.
 3. Nové APK nainstalujte na box přes staré – rekordy zůstanou zachované.
 4. Aby si telefony stáhly novou verzi, zvyšte v souboru `sw.js` číslo v řádku
-   `const CACHE = 'santa-dash-v5.7';` (např. na `v5.8`).
+   `const CACHE = 'santa-dash-v5.9';` (např. na `v5.10`).
 
 ## Řešení potíží
 
