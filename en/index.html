@@ -1314,7 +1314,7 @@
           <span>👺 Elf: Drop a tree on it = 9 presents!</span>
           <span>🔨 Workshop: A tree falling through becomes a present (and a present becomes a tree!)</span>
           <span>🍪 Gingerbread dough: It grows! Seal it in = presents, let it overgrow = trees</span>
-          <span>🍳 Oven lid: Stand above the oven opening and press down – the oven bakes fast</span>
+          <span>🍳 Oven lid: Stand next to the oven opening and push into it – the oven bakes fast</span>
           <span>🕹️ Lever: Powers up the teleport</span>
           <span>💎 Ice stone: Teleports you to the other stone</span>
           <span>🔑 Key &amp; ▦ Gate: The key unlocks the gate</span>
@@ -1409,7 +1409,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.17</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.18</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2646,12 +2646,17 @@
         },
         {
           name: "9. Dough Avalanche",
-          hint: "When the dough touches an elf – boom, presents! Open the little doors only after that.",
+          hint: "The lid is in the left chamber, but you can only cover the oven from the right one. Watch out for both elves!",
           required: 32,
           time: 190,
           doughMax: 46,
           doughRate: 0.035,
           doughFastAfter: 45,
+          ovenMouth: { x: 15, y: 8 },   // otvor pece – z pravé komory (Santa tlačí doleva)
+          doughLidRate: 0.45,
+          elvesIgnoreDough: true,       // těsto skřítky nezalepí – dárky jen z upečené pece
+          onlyLidBakes: true,           // bez poklopu se těsto neupeče, jen ztvrdne na stromky
+          elvesStayHome: true,          // skřítci neopustí svou komoru
           map: [
             "######################",
             "#S..G....T..T....G..E#",
@@ -2660,8 +2665,8 @@
             "#....G..T....T..G....#",
             "#.##################.#",
             "#.#   #        #   #.#",
-            "#.#M  .   D    .  M#.#",
-            "#..   .     D  .   ..#",
+            "#.#M  #   D    #  M#.#",
+            "#..  U#     D  .   ..#",
             "#.#   #        #   #.#",
             "#.##################.#",
             "#..G...T....G....T.G.#",
@@ -3004,6 +3009,23 @@
                 hasKeyLevel = true;
                 break;
             }
+          }
+        }
+
+        // Skřítci, kteří mají zůstat doma: zapamatovat si prostor jejich komory
+        if (lvl.elvesStayHome) {
+          for (const e of enemies) {
+            const home = new Set();
+            const st = [[e.x, e.y]];
+            while (st.length) {
+              const [x, y] = st.pop();
+              const k = y * COLS + x;
+              const t = grid[y]?.[x];
+              if (home.has(k) || !(t === TILE.EMPTY || t === TILE.ENEMY || t === TILE.LID_ITEM)) continue;
+              home.add(k);
+              for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
+            }
+            e.home = home;
           }
         }
 
@@ -3426,7 +3448,7 @@
               triggerPlayerDeath('A naughty elf caught you!');
               return true;
             }
-            if (t === TILE.DOUGH) touchesDough = true;
+            if (t === TILE.DOUGH && !LEVELS[currentLevelIdx].elvesIgnoreDough) touchesDough = true;
           }
           if (touchesDough) {
             spawnFloatingText(enemy.x, enemy.y, 'THE ELF GOT STUCK IN THE DOUGH! 🍪');
@@ -3440,9 +3462,10 @@
       // Doleva zahne jen tehdy, když mu stěna po levici právě skončila – na volném
       // prostranství proto nekrouží dokola na jednom místě, ale jde rovně ke stěně.
       function moveEnemies() {
-        const isFree = (x, y) => grid[y]?.[x] === TILE.EMPTY;
+        let enemy = null;
+        const isFree = (x, y) => grid[y]?.[x] === TILE.EMPTY && (!enemy.home || enemy.home.has(y * COLS + x));
 
-        for (const enemy of [...enemies]) {
+        for (enemy of [...enemies]) {
           if (!enemies.includes(enemy)) continue;
           const fwd = enemy.dir;
           const left = (fwd + 3) % 4;
@@ -3566,7 +3589,7 @@
           return;
         }
 
-        if (!canGrow) {
+        if (!canGrow && !(lvl.onlyLidBakes && !lidPlaced)) {
           doughActive = false;
           for (const c of cells) {
             grid[c.y][c.x] = TILE.GIFT;
@@ -3592,7 +3615,8 @@
           return;
         }
 
-        if (cells.length >= (lvl.doughMax || 40)) {
+        // V úrovni, kde peče jen poklop, se těsto zaseknuté bez poklopu nepeče, ale ztvrdne
+        if (cells.length >= (lvl.doughMax || 40) || (!canGrow && lvl.onlyLidBakes && !lidPlaced)) {
           doughActive = false;
           for (const c of cells) {
             grid[c.y][c.x] = TILE.TREE;
@@ -3664,11 +3688,11 @@
         if (!grid[ny] || grid[ny][nx] === undefined) return;
         const target = grid[ny][nx];
 
-        // Poklop: Santa stojí nad otvorem pece a zmáčkne dolů → přiklopí pec
+        // Poklop: Santa stojí u otvoru pece a zatlačí směrem do něj → přiklopí pec
         const mouth = LEVELS[currentLevelIdx].ovenMouth;
-        if (dy === 1 && hasLid && mouth && nx === mouth.x && ny === mouth.y &&
+        if (hasLid && mouth && nx === mouth.x && ny === mouth.y &&
             (target === TILE.EMPTY || target === TILE.SNOW || target === TILE.DOUGH)) {
-          placeLid(nx, ny);
+          placeLid(nx, ny, dx, dy);
           pushCounter = 0;
           return;
         }
@@ -3904,12 +3928,12 @@
       // sněhová koule dopadne na druhý konec → Santa letí po oblouku.
       // ---------------------------------------------------------
       // Přiklopení pece: otvor zaklapne poklop (těsto v otvoru zatlačí zpátky dovnitř)
-      function placeLid(mx, my) {
+      function placeLid(mx, my, dx = 0, dy = 1) {
         grid[my][mx] = TILE.LID;
         falling[my][mx] = false;
-        // vnitřek pece = vše, kam se z prostoru pod poklopem dostane těsto
+        // vnitřek pece = vše, kam se z prostoru za poklopem dostane těsto
         const inside = new Set();
-        const stack = [[mx, my + 1]];
+        const stack = [[mx + dx, my + dy]];
         while (stack.length) {
           const [x, y] = stack.pop();
           const t = grid[y]?.[x];

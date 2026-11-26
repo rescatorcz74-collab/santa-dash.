@@ -1314,7 +1314,7 @@
           <span>👺 Skřítek: Shodit na něj stromek = 9 dárků!</span>
           <span>🔨 Dílna: Propadlý stromek se změní v dárek (a dárek ve stromek!)</span>
           <span>🍪 Perníkové těsto: Roste! Uzavři ho = dárky, přeroste = stromky</span>
-          <span>🍳 Poklop: Stoupni si nad otvor pece a zmáčkni dolů – pec se rychle upeče</span>
+          <span>🍳 Poklop: Stoupni si k otvoru pece a zatlač do něj – pec se rychle upeče</span>
           <span>🕹️ Páka: Oživí teleport</span>
           <span>💎 Ledový kámen: Teleport k druhému kameni</span>
           <span>🔑 Klíč &amp; ▦ Mříž: Klíčem odemkneš mříž</span>
@@ -1409,7 +1409,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.17</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.18</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -3904,12 +3904,21 @@ function initGame() {
     },
     {
       name: "9. Těstová lavina",
-      hint: "Když se těsto dotkne skřítka – bum, dárky! Dvířka otevři až pak.",
+      hint: "Poklop je v levé komoře, přiklopit pec jde jen z pravé. Pozor na oba skřítky!",
       required: 32,
       time: 190,
       doughMax: 46,
       doughRate: 0.035,
       doughFastAfter: 45,
+      ovenMouth: { x: 15, y: 8 },
+      // otvor pece – z pravé komory (Santa tlačí doleva)
+      doughLidRate: 0.45,
+      elvesIgnoreDough: true,
+      // těsto skřítky nezalepí – dárky jen z upečené pece
+      onlyLidBakes: true,
+      // bez poklopu se těsto neupeče, jen ztvrdne na stromky
+      elvesStayHome: true,
+      // skřítci neopustí svou komoru
       map: [
         "######################",
         "#S..G....T..T....G..E#",
@@ -3918,8 +3927,8 @@ function initGame() {
         "#....G..T....T..G....#",
         "#.##################.#",
         "#.#   #        #   #.#",
-        "#.#M  .   D    .  M#.#",
-        "#..   .     D  .   ..#",
+        "#.#M  #   D    #  M#.#",
+        "#..  U#     D  .   ..#",
         "#.#   #        #   #.#",
         "#.##################.#",
         "#..G...T....G....T.G.#",
@@ -4135,6 +4144,7 @@ function initGame() {
     });
   }
   function loadLevel(idx, playMusic = true) {
+    var _a;
     const lvl = LEVELS[idx];
     currentLevelIdx = idx;
     giftsRequired = lvl.required;
@@ -4267,6 +4277,21 @@ function initGame() {
             hasKeyLevel = true;
             break;
         }
+      }
+    }
+    if (lvl.elvesStayHome) {
+      for (const e of enemies) {
+        const home = /* @__PURE__ */ new Set();
+        const st = [[e.x, e.y]];
+        while (st.length) {
+          const [x, y] = st.pop();
+          const k = y * COLS + x;
+          const t = (_a = grid[y]) == null ? void 0 : _a[x];
+          if (home.has(k) || !(t === TILE.EMPTY || t === TILE.ENEMY || t === TILE.LID_ITEM)) continue;
+          home.add(k);
+          for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
+        }
+        e.home = home;
       }
     }
     updateHUD();
@@ -4649,7 +4674,7 @@ function initGame() {
           triggerPlayerDeath("Chytil tě zlobivý skřítek!");
           return true;
         }
-        if (t === TILE.DOUGH) touchesDough = true;
+        if (t === TILE.DOUGH && !LEVELS[currentLevelIdx].elvesIgnoreDough) touchesDough = true;
       }
       if (touchesDough) {
         spawnFloatingText(enemy.x, enemy.y, "SKŘÍTEK SE ZALEPIL! 🍪");
@@ -4659,11 +4684,12 @@ function initGame() {
     return false;
   }
   function moveEnemies() {
+    let enemy = null;
     const isFree = (x, y) => {
       var _a;
-      return ((_a = grid[y]) == null ? void 0 : _a[x]) === TILE.EMPTY;
+      return ((_a = grid[y]) == null ? void 0 : _a[x]) === TILE.EMPTY && (!enemy.home || enemy.home.has(y * COLS + x));
     };
-    for (const enemy of [...enemies]) {
+    for (enemy of [...enemies]) {
       if (!enemies.includes(enemy)) continue;
       const fwd = enemy.dir;
       const left = (fwd + 3) % 4;
@@ -4771,7 +4797,7 @@ function initGame() {
       doughActive = false;
       return;
     }
-    if (!canGrow) {
+    if (!canGrow && !(lvl.onlyLidBakes && !lidPlaced)) {
       doughActive = false;
       for (const c of cells) {
         grid[c.y][c.x] = TILE.GIFT;
@@ -4795,7 +4821,7 @@ function initGame() {
       updateHUD();
       return;
     }
-    if (cells.length >= (lvl.doughMax || 40)) {
+    if (cells.length >= (lvl.doughMax || 40) || !canGrow && lvl.onlyLidBakes && !lidPlaced) {
       doughActive = false;
       for (const c of cells) {
         grid[c.y][c.x] = TILE.TREE;
@@ -4855,8 +4881,8 @@ function initGame() {
     if (!grid[ny] || grid[ny][nx] === void 0) return;
     const target = grid[ny][nx];
     const mouth = LEVELS[currentLevelIdx].ovenMouth;
-    if (dy === 1 && hasLid && mouth && nx === mouth.x && ny === mouth.y && (target === TILE.EMPTY || target === TILE.SNOW || target === TILE.DOUGH)) {
-      placeLid(nx, ny);
+    if (hasLid && mouth && nx === mouth.x && ny === mouth.y && (target === TILE.EMPTY || target === TILE.SNOW || target === TILE.DOUGH)) {
+      placeLid(nx, ny, dx, dy);
       pushCounter = 0;
       return;
     }
@@ -5061,12 +5087,12 @@ function initGame() {
     player.y = ny;
     grid[ny][nx] = TILE.SANTA;
   }
-  function placeLid(mx, my) {
+  function placeLid(mx, my, dx = 0, dy = 1) {
     var _a;
     grid[my][mx] = TILE.LID;
     falling[my][mx] = false;
     const inside = /* @__PURE__ */ new Set();
-    const stack = [[mx, my + 1]];
+    const stack = [[mx + dx, my + dy]];
     while (stack.length) {
       const [x, y] = stack.pop();
       const t = (_a = grid[y]) == null ? void 0 : _a[x];

@@ -92,7 +92,7 @@ V pauze jsou tlačítka **Restart úrovně, Hudba, Zvuk a Hlavní menu**.
 2. Web se aktualizuje sám, nové APK se samo sestaví v **Actions**.
 3. Nové APK nainstalujte na box přes staré – rekordy zůstanou zachované.
 4. Aby si telefony stáhly novou verzi, zvyšte v souboru `sw.js` číslo v řádku
-   `const CACHE = 'santa-dash-v5.17';` (např. na `v5.18`).
+   `const CACHE = 'santa-dash-v5.18';` (např. na `v5.19`).
 
 ## Řešení potíží
 
