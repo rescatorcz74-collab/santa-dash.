@@ -1409,7 +1409,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.16</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.17</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2672,21 +2672,23 @@
         },
         {
           name: "10. Štědrý večer",
-          hint: "Dílna, těsto, skřítek i sob. Ukaž, co umíš!",
+          hint: "Poklop leží u dveří dílny. Přiklop pec, než těsto uteče – a pak sob k saním!",
           required: 24,
           time: 250,
           workshopTime: 30,
           doughMax: 32,
           doughRate: 0.03,
           doughFastAfter: 90,
+          ovenMouth: { x: 15, y: 7 },   // otvor pece – sem patří poklop
+          doughLidRate: 0.45,
           map: [
             "######################",
             "#S...G....T....G....G#",
             "#..TTTTTTT..G...T....#",
             "#....................#",
             "#.#WWWWWWW#....G..G..#",
-            "#.#       #....T.....#",
-            "#.#  M    ....G....T.#",
+            "#.#       #..........#",
+            "#.#  M    U...G....T.#",
             "#.#############.###..#",
             "#..G.......#  D   ##G#",
             "#.T....G...#   D  # ##",
