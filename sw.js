@@ -1,6 +1,6 @@
 // Service worker – díky němu hra funguje i offline a dá se nainstalovat na plochu.
 // Při každé nové verzi hry stačí změnit číslo verze, aby si telefony stáhly novinky.
-const CACHE = 'santa-dash-v5.15';
+const CACHE = 'santa-dash-v5.16';
 const CORE = [
   './',
   './index.html',

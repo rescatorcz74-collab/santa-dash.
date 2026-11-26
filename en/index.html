@@ -746,30 +746,35 @@
     }
     .jukebox-btn svg { width: 100%; height: 100%; display: block; }
 
-    /* LCD displeje (hodiny a odpočet do Vánoc) – šedozelené LCD bez podsvícení */
+    /* Displej s hodinami a odpočtem do Vánoc – oranžově svítící segmenty (bez podkladu) */
     .lcd {
       display: none;
-      box-sizing: border-box;
-      padding: 4px 5px 3px;
-      border-radius: 6px;
-      border: 3px solid #1d1d22;
-      background: linear-gradient(180deg, #c3ccae 0%, #aab595 100%);
-      box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.35), 0 3px 0 #0d0d10;
-      text-align: center;
       pointer-events: none;
+      text-align: center;
+      filter: drop-shadow(0 0 3px rgba(255, 140, 40, 0.75)) drop-shadow(0 0 8px rgba(240, 110, 20, 0.35));
     }
     .lcd.lcd-nofit { visibility: hidden; }
-    .lcd-digits { display: block; width: 100%; height: auto; max-height: 24px; }
+    .lcd-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 5px;
+    }
+    .lcd-time .lcd-digits { height: 30px; width: auto; }
+    .lcd-xmas { margin-top: 7px; }
+    .lcd-xmas .lcd-digits { height: 17px; width: auto; }
+    .lcd-ampm,
     .lcd-label {
-      margin-top: 2px;
       font-family: 'Courier New', Courier, monospace;
       font-weight: bold;
-      font-size: 9px;
-      line-height: 1.1;
-      letter-spacing: 0.5px;
-      color: #1c2318;
+      color: #ffb04a;
+      text-transform: uppercase;
       white-space: nowrap;
+      line-height: 1;
     }
+    .lcd-ampm { font-size: 11px; padding-bottom: 2px; }
+    .lcd-ampm:empty { display: none; }
+    .lcd-label { font-size: 11px; letter-spacing: 0.5px; padding-bottom: 1px; }
 
     /* Prohození šipek (jen u rozdělených šipek) */
     .swap-btn {
@@ -1097,11 +1102,10 @@
       body:not(.tv).touch-device.in-game .lcd {
         display: block;
         align-self: start;
-        justify-self: stretch;
-        margin-top: 2px;
+        justify-self: center;
+        margin-top: 8px;
+        grid-area: padr;
       }
-      body:not(.tv) #lcd-left { grid-area: padl; }
-      body:not(.tv) #lcd-right { grid-area: padr; }
 
       body:not(.tv) #touch-left {
         grid-area: padl;
@@ -1114,11 +1118,6 @@
       body:not(.tv).touch-split #touch-left,
       body:not(.tv).touch-strip #touch-left {
         gap: clamp(22px, 9vh, 44px);
-      }
-
-      /* u pásků menší mezera nad páskem, ať se vejde i LCD s odpočtem */
-      body:not(.tv).touch-strip #touch-left {
-        gap: clamp(12px, 4vh, 24px);
       }
 
       body:not(.tv) .swap-btn {
@@ -1410,7 +1409,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.15</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.16</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -1470,8 +1469,10 @@
     <!-- Dotykový D-pad pro mobily a tablety -->
     <div id="touch-controls">
       <!-- LCD displeje ve stylu digitálních her z 80. let (jen na šířku) -->
-      <div class="lcd" id="lcd-left" aria-hidden="true"><svg class="lcd-digits" id="lcd-days"></svg><div class="lcd-label" id="lcd-days-label"></div></div>
-      <div class="lcd" id="lcd-right" aria-hidden="true"><svg class="lcd-digits" id="lcd-clock"></svg><div class="lcd-label" id="lcd-clock-label"></div></div>
+      <div class="lcd" id="lcd" aria-hidden="true">
+        <div class="lcd-row lcd-time"><svg class="lcd-digits" id="lcd-clock"></svg><span class="lcd-ampm" id="lcd-ampm"></span></div>
+        <div class="lcd-row lcd-xmas"><svg class="lcd-digits" id="lcd-days"></svg><span class="lcd-label" id="lcd-days-label"></span></div>
+      </div>
       <div class="touch-panel" id="touch-left">
         <button type="button" class="swap-btn" id="btn-swap-arrows" aria-label="Swap arrows" title="Swap left and right arrows">
           <svg viewBox="0 0 60 74" aria-hidden="true">
@@ -6298,7 +6299,7 @@
         const V = (x, y) => `${x + 1},${y + 1} ${x + 2},${y + 2} ${x + 2},${y + 8} ${x + 1},${y + 9} ${x},${y + 8} ${x},${y + 2}`;
         return { a: H(x0, 0), g: H(x0, 9), d: H(x0, 18), f: V(x0, 0), e: V(x0, 9), b: V(x0 + 8, 0), c: V(x0 + 8, 9) };
       }
-      const LCD_ON = '#1c2318', LCD_GHOST = 'rgba(28, 35, 24, 0.10)';
+      const LCD_ON = '#ff9a2e', LCD_GHOST = 'rgba(255, 140, 40, 0.10)';
       function lcdDigits(text, colonOn) {
         // text: znaky číslic, ':' = dvojtečka
         let x = 0, out = '';
@@ -6344,25 +6345,30 @@
         if (key === lcdLastKey) return;
         lcdLastKey = key;
         setLcd('lcd-clock', hh + ':' + mm, colon);
-        document.getElementById('lcd-clock-label').textContent = LCD_TXT.h12 ? `${LCD_TXT.time} ${suffix}` : LCD_TXT.time;
+        document.getElementById('lcd-ampm').textContent = suffix;
+        const daysEl = document.getElementById('lcd-days');
         if (merry) {
-          setLcd('lcd-days', '   ', false);
+          daysEl.style.display = 'none';
           document.getElementById('lcd-days-label').textContent = LCD_TXT.merry.join(' ');
         } else {
-          const txt = String(days).padStart(3, ' ');
-          setLcd('lcd-days', txt, false);
+          daysEl.style.display = '';
+          setLcd('lcd-days', String(days).padStart(days >= 100 ? 3 : 2, ' '), false);
           document.getElementById('lcd-days-label').textContent = LCD_TXT.unit(days) + ' ' + LCD_TXT.to;
         }
       }
-      // displej skrýt, pokud by zasahoval do ovládání (malé telefony)
+      // displej stojí nad šipkami do stran (po prohození vlevo, u kříže nad křížem);
+      // kdyby přesto zasahoval do ovládání, skryje se
       function fitLcd() {
-        [['lcd-left', 'touch-left'], ['lcd-right', 'touch-right']].forEach(([lid, pid]) => {
-          const l = document.getElementById(lid), p = document.getElementById(pid);
-          if (!l.getClientRects().length) return;
-          const lr = l.getBoundingClientRect(), pr = p.getBoundingClientRect();
-          const clash = pr.height > 0 && lr.bottom > pr.top - 6;
-          l.classList.toggle('lcd-nofit', clash || lr.width < 44);
-        });
+        const l = document.getElementById('lcd');
+        if (!l.getClientRects().length) return;
+        const horiz = document.querySelector(touchScheme === 'strip' ? '.pad-strip-h' : '.pad-split-h');
+        let panel = document.getElementById('touch-right');
+        if (touchScheme === 'cross') panel = document.getElementById('touch-left');
+        else if (horiz && horiz.parentElement) panel = horiz.parentElement;
+        const area = panel.id === 'touch-left' ? 'padl' : 'padr';
+        if (l.style.gridArea !== area) l.style.gridArea = area;
+        const lr = l.getBoundingClientRect(), pr = panel.getBoundingClientRect();
+        l.classList.toggle('lcd-nofit', pr.height > 0 && lr.bottom > pr.top - 4);
       }
       updateLcd();
       setInterval(() => { updateLcd(); fitLcd(); }, 500);
