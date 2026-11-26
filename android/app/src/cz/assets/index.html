@@ -1409,7 +1409,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.18</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.19</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -4083,6 +4083,7 @@ function initGame() {
   let particles = [];
   let bgSnowflakes = [];
   let candyCane = null;
+  let ovenZone = /* @__PURE__ */ new Set();
   let candySpawnTimer = 7;
   let candiesSpawned = 0;
   const STAR_POINTS = 600;
@@ -4144,7 +4145,7 @@ function initGame() {
     });
   }
   function loadLevel(idx, playMusic = true) {
-    var _a;
+    var _a, _b;
     const lvl = LEVELS[idx];
     currentLevelIdx = idx;
     giftsRequired = lvl.required;
@@ -4279,6 +4280,22 @@ function initGame() {
         }
       }
     }
+    ovenZone = /* @__PURE__ */ new Set();
+    if (lvl.ovenMouth) {
+      const st = [];
+      for (let y = 1; y < ROWS - 1; y++) {
+        for (let x = 1; x < COLS - 1; x++) if (grid[y][x] === TILE.DOUGH) st.push([x, y]);
+      }
+      while (st.length) {
+        const [x, y] = st.pop();
+        const k = y * COLS + x;
+        const t = (_a = grid[y]) == null ? void 0 : _a[x];
+        if (ovenZone.has(k) || !(t === TILE.EMPTY || t === TILE.DOUGH)) continue;
+        ovenZone.add(k);
+        for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
+      }
+      ovenZone.add(lvl.ovenMouth.y * COLS + lvl.ovenMouth.x);
+    }
     if (lvl.elvesStayHome) {
       for (const e of enemies) {
         const home = /* @__PURE__ */ new Set();
@@ -4286,7 +4303,7 @@ function initGame() {
         while (st.length) {
           const [x, y] = st.pop();
           const k = y * COLS + x;
-          const t = (_a = grid[y]) == null ? void 0 : _a[x];
+          const t = (_b = grid[y]) == null ? void 0 : _b[x];
           if (home.has(k) || !(t === TILE.EMPTY || t === TILE.ENEMY || t === TILE.LID_ITEM)) continue;
           home.add(k);
           for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
@@ -4411,7 +4428,7 @@ function initGame() {
     const fallback = [];
     for (let y = 1; y <= ROWS - 2; y++) {
       for (let x = 1; x <= COLS - 2; x++) {
-        if (grid[y][x] === TILE.EMPTY) {
+        if (grid[y][x] === TILE.EMPTY && !ovenZone.has(y * COLS + x) && !enemies.some((e) => e.home && e.home.has(y * COLS + x))) {
           if (!sleighPulled && sleighPos && Math.abs(sleighPos.x - x) + Math.abs(sleighPos.y - y) <= 2) {
             continue;
           }
@@ -4472,7 +4489,7 @@ function initGame() {
     const candidates = [];
     for (let y = 1; y < ROWS - 1; y++) {
       for (let x = 1; x < COLS - 1; x++) {
-        if (grid[y][x] !== TILE.SNOW || dist[y][x] < 0 || nearDanger(x, y) || nearLoose(x, y)) continue;
+        if (grid[y][x] !== TILE.SNOW || dist[y][x] < 0 || nearDanger(x, y) || nearLoose(x, y) || ovenZone.has(y * COLS + x)) continue;
         candidates.push({ x, y, d: dist[y][x] });
       }
     }
@@ -5087,6 +5104,7 @@ function initGame() {
     player.y = ny;
     grid[ny][nx] = TILE.SANTA;
   }
+  const OVEN_INSIDE = /* @__PURE__ */ new Set([TILE.EMPTY, TILE.DOUGH, TILE.CANDY_CANE, TILE.GIFT, TILE.TREE, TILE.SNOW, TILE.STAR]);
   function placeLid(mx, my, dx = 0, dy = 1) {
     var _a;
     grid[my][mx] = TILE.LID;
@@ -5097,7 +5115,7 @@ function initGame() {
       const [x, y] = stack.pop();
       const t = (_a = grid[y]) == null ? void 0 : _a[x];
       const k = y * COLS + x;
-      if (inside.has(k) || !(t === TILE.EMPTY || t === TILE.DOUGH)) continue;
+      if (inside.has(k) || !OVEN_INSIDE.has(t)) continue;
       inside.add(k);
       for (const d of DIRS4) stack.push([x + d.dx, y + d.dy]);
     }

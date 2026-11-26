@@ -1409,7 +1409,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.18</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.19</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2814,6 +2814,7 @@
       let particles = [];
       let bgSnowflakes = [];
       let candyCane = null; // { x, y, life, maxLife }
+      let ovenZone = new Set(); // políčka pece + její otvor – tam se hůlka ani hvězda neobjeví
       let candySpawnTimer = 7.0;
       let candiesSpawned = 0;
 
@@ -3013,6 +3014,24 @@
           }
         }
 
+        // Pec s poklopem: zapamatovat si její vnitřek a otvor
+        ovenZone = new Set();
+        if (lvl.ovenMouth) {
+          const st = [];
+          for (let y = 1; y < ROWS - 1; y++) {
+            for (let x = 1; x < COLS - 1; x++) if (grid[y][x] === TILE.DOUGH) st.push([x, y]);
+          }
+          while (st.length) {
+            const [x, y] = st.pop();
+            const k = y * COLS + x;
+            const t = grid[y]?.[x];
+            if (ovenZone.has(k) || !(t === TILE.EMPTY || t === TILE.DOUGH)) continue;
+            ovenZone.add(k);
+            for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
+          }
+          ovenZone.add(lvl.ovenMouth.y * COLS + lvl.ovenMouth.x);
+        }
+
         // Skřítci, kteří mají zůstat doma: zapamatovat si prostor jejich komory
         if (lvl.elvesStayHome) {
           for (const e of enemies) {
@@ -3165,7 +3184,8 @@
 
         for (let y = 1; y <= ROWS - 2; y++) {
           for (let x = 1; x <= COLS - 2; x++) {
-            if (grid[y][x] === TILE.EMPTY) {
+            if (grid[y][x] === TILE.EMPTY && !ovenZone.has(y * COLS + x) &&
+                !enemies.some(e => e.home && e.home.has(y * COLS + x))) {
               // Nikdy ne do okolí neodtažených saní – zablokovala by místo, kam je sob odtáhne
               if (!sleighPulled && sleighPos && Math.abs(sleighPos.x - x) + Math.abs(sleighPos.y - y) <= 2) {
                 continue;
@@ -3232,7 +3252,7 @@
         const candidates = [];
         for (let y = 1; y < ROWS - 1; y++) {
           for (let x = 1; x < COLS - 1; x++) {
-            if (grid[y][x] !== TILE.SNOW || dist[y][x] < 0 || nearDanger(x, y) || nearLoose(x, y)) continue;
+            if (grid[y][x] !== TILE.SNOW || dist[y][x] < 0 || nearDanger(x, y) || nearLoose(x, y) || ovenZone.has(y * COLS + x)) continue;
             candidates.push({ x, y, d: dist[y][x] });
           }
         }
@@ -3929,6 +3949,9 @@
       // sněhová koule dopadne na druhý konec → Santa letí po oblouku.
       // ---------------------------------------------------------
       // Přiklopení pece: otvor zaklapne poklop (těsto v otvoru zatlačí zpátky dovnitř)
+      // Co všechno může ležet uvnitř pece (pec je ohraničená zdmi)
+      const OVEN_INSIDE = new Set([TILE.EMPTY, TILE.DOUGH, TILE.CANDY_CANE, TILE.GIFT, TILE.TREE, TILE.SNOW, TILE.STAR]);
+
       function placeLid(mx, my, dx = 0, dy = 1) {
         grid[my][mx] = TILE.LID;
         falling[my][mx] = false;
@@ -3939,7 +3962,7 @@
           const [x, y] = stack.pop();
           const t = grid[y]?.[x];
           const k = y * COLS + x;
-          if (inside.has(k) || !(t === TILE.EMPTY || t === TILE.DOUGH)) continue;
+          if (inside.has(k) || !OVEN_INSIDE.has(t)) continue;
           inside.add(k);
           for (const d of DIRS4) stack.push([x + d.dx, y + d.dy]);
         }
