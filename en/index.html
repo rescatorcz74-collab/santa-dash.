@@ -746,6 +746,31 @@
     }
     .jukebox-btn svg { width: 100%; height: 100%; display: block; }
 
+    /* LCD displeje (hodiny a odpočet do Vánoc) – šedozelené LCD bez podsvícení */
+    .lcd {
+      display: none;
+      box-sizing: border-box;
+      padding: 4px 5px 3px;
+      border-radius: 6px;
+      border: 3px solid #1d1d22;
+      background: linear-gradient(180deg, #c3ccae 0%, #aab595 100%);
+      box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.35), 0 3px 0 #0d0d10;
+      text-align: center;
+      pointer-events: none;
+    }
+    .lcd.lcd-nofit { visibility: hidden; }
+    .lcd-digits { display: block; width: 100%; height: auto; max-height: 24px; }
+    .lcd-label {
+      margin-top: 2px;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      font-size: 9px;
+      line-height: 1.1;
+      letter-spacing: 0.5px;
+      color: #1c2318;
+      white-space: nowrap;
+    }
+
     /* Prohození šipek (jen u rozdělených šipek) */
     .swap-btn {
       width: 62px;
@@ -1069,6 +1094,15 @@
         display: contents;
       }
 
+      body:not(.tv).touch-device.in-game .lcd {
+        display: block;
+        align-self: start;
+        justify-self: stretch;
+        margin-top: 2px;
+      }
+      body:not(.tv) #lcd-left { grid-area: padl; }
+      body:not(.tv) #lcd-right { grid-area: padr; }
+
       body:not(.tv) #touch-left {
         grid-area: padl;
         align-self: end;
@@ -1080,6 +1114,11 @@
       body:not(.tv).touch-split #touch-left,
       body:not(.tv).touch-strip #touch-left {
         gap: clamp(22px, 9vh, 44px);
+      }
+
+      /* u pásků menší mezera nad páskem, ať se vejde i LCD s odpočtem */
+      body:not(.tv).touch-strip #touch-left {
+        gap: clamp(12px, 4vh, 24px);
       }
 
       body:not(.tv) .swap-btn {
@@ -1140,6 +1179,28 @@
       /* Šipky jen během hraní, ať nepřekrývají menu */
       body:not(.tv):not(.in-game) .touch-panel {
         display: none !important;
+      }
+    }
+
+    /* Kratší displeje na šířku (poměr pod 2:1, např. iPhone SE): hrací plochu tu omezuje
+       šířka, takže ovládání do stran je kompaktnější. Na delších telefonech se nic nemění. */
+    @media (orientation: landscape) and (max-height: 520px) and (max-aspect-ratio: 2/1) {
+      body:not(.tv) .pad-split-h button {
+        width: clamp(48px, 14vh, 64px);
+        height: clamp(48px, 14vh, 64px);
+        font-size: 22px;
+      }
+
+      body:not(.tv).touch-split .pad-split-h {
+        gap: 4px;
+      }
+
+      body:not(.tv).touch-strip .pad-strip-h {
+        width: clamp(110px, 32vh, 150px);
+      }
+
+      body:not(.tv) .touch-panel {
+        padding: 5px;
       }
     }
   </style>
@@ -1349,7 +1410,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.12</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.15</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -1408,6 +1469,9 @@
 
     <!-- Dotykový D-pad pro mobily a tablety -->
     <div id="touch-controls">
+      <!-- LCD displeje ve stylu digitálních her z 80. let (jen na šířku) -->
+      <div class="lcd" id="lcd-left" aria-hidden="true"><svg class="lcd-digits" id="lcd-days"></svg><div class="lcd-label" id="lcd-days-label"></div></div>
+      <div class="lcd" id="lcd-right" aria-hidden="true"><svg class="lcd-digits" id="lcd-clock"></svg><div class="lcd-label" id="lcd-clock-label"></div></div>
       <div class="touch-panel" id="touch-left">
         <button type="button" class="swap-btn" id="btn-swap-arrows" aria-label="Swap arrows" title="Swap left and right arrows">
           <svg viewBox="0 0 60 74" aria-hidden="true">
@@ -1879,6 +1943,7 @@
               const AudioCtx = window.AudioContext || window.webkitAudioContext;
               if (AudioCtx) {
                 this.ctx = new AudioCtx();
+                this._watchState();
               }
             }
             if (this.ctx && !this.musicFilter) {
@@ -1898,6 +1963,52 @@
           } catch (e) {
             this.ctx = null;
           }
+        }
+
+        // ---- iPhone: zvuk umí Safari „uspat“ (jiná aplikace, zámek, hovor,
+        // notifikace) a znovu ho dovolí zapnout jen při doteku hráče ----
+        _watchState() {
+          const ctx = this.ctx;
+          if (!ctx) return;
+          ctx.onstatechange = () => {
+            if (ctx !== this.ctx) return;
+            if (ctx.state === 'running' && this.isMusicPlaying) {
+              // navázat hudbu bez návalu zpožděných tónů
+              this.nextNoteTime = ctx.currentTime + 0.06;
+            }
+          };
+          this._lastCtxTime = ctx.currentTime;
+          this._lastWall = performance.now();
+        }
+
+        // volá se při každém doteku / klávese
+        wake() {
+          if (!this.ctx) return;
+          const ctx = this.ctx;
+          if (this._needsRecreate) { this._recreate(); return; }
+          if (ctx.state !== 'running') {
+            const p = ctx.resume();
+            if (p && typeof p.then === 'function') {
+              p.then(() => {}).catch(() => { this._needsRecreate = true; });
+            }
+            // když se ani tak nerozběhne, příště kontext založíme znovu
+            clearTimeout(this._wakeTimer);
+            this._wakeTimer = setTimeout(() => {
+              if (this.ctx === ctx && ctx.state !== 'running') this._needsRecreate = true;
+            }, 400);
+          }
+        }
+
+        // nový zvukový kontext (starý po přerušení na iPhonu někdy „běží“, ale je potichu)
+        _recreate() {
+          this._needsRecreate = false;
+          const wasPlaying = this.isMusicPlaying;
+          this.stopMusic();
+          try { if (this.ctx && this.ctx.close) this.ctx.close().catch(function () {}); } catch (e) {}
+          this.ctx = null;
+          this.musicFilter = null;
+          this.init();
+          if (wasPlaying && this.ctx) this.startMusic(false);
         }
 
         setSong(idx) {
@@ -1945,10 +2056,21 @@
 
           const scheduler = () => {
             if (!this.isMusicPlaying || this.muted || !this.musicEnabled || !this.ctx) return;
-            if (this.ctx.state === 'suspended') {
+            if (this.ctx.state !== 'running') {
+              // 'suspended' nebo iPhonové 'interrupted' – čekáme na dotek hráče
               this.ctx.resume().catch(function () {});
               this.nextNoteTime = this.ctx.currentTime + 0.1;
+              this._lastCtxTime = this.ctx.currentTime;
+              this._lastWall = performance.now();
               return;
+            }
+            // „běží“, ale čas zvuku stojí → zvuk zamrzl, při dalším doteku ho založíme znovu
+            const nowWall = performance.now();
+            if (this.ctx.currentTime > this._lastCtxTime) {
+              this._lastCtxTime = this.ctx.currentTime;
+              this._lastWall = nowWall;
+            } else if (nowWall - (this._lastWall || nowWall) > 1200) {
+              this._needsRecreate = true;
             }
 
             const song = this.songs[this.currentSongIdx] || this.songs[0];
@@ -6163,7 +6285,94 @@
         if (document.hidden && state === 'PLAYING') {
           togglePause();
         }
+        if (!document.hidden) audio.wake();
       });
+
+      // =====================================================================
+      //  LCD: hodiny a odpočet do Vánoc (čas bere z telefonu – je vždy místní)
+      // =====================================================================
+      const LCD_TXT = { unit: n => (n === 1 ? 'DAY' : 'DAYS'), to: 'TILL XMAS', merry: ['MERRY', 'XMAS!'], time: 'TIME', h12: true, xmasDay: 25 };
+      const SEGS = { '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc', '5': 'afgcd', '6': 'afgedc', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg', '-': 'g', ' ': '' };
+      function segPolys(x0) {
+        const H = (x, y) => `${x + 1},${y + 1} ${x + 2},${y} ${x + 8},${y} ${x + 9},${y + 1} ${x + 8},${y + 2} ${x + 2},${y + 2}`;
+        const V = (x, y) => `${x + 1},${y + 1} ${x + 2},${y + 2} ${x + 2},${y + 8} ${x + 1},${y + 9} ${x},${y + 8} ${x},${y + 2}`;
+        return { a: H(x0, 0), g: H(x0, 9), d: H(x0, 18), f: V(x0, 0), e: V(x0, 9), b: V(x0 + 8, 0), c: V(x0 + 8, 9) };
+      }
+      const LCD_ON = '#1c2318', LCD_GHOST = 'rgba(28, 35, 24, 0.10)';
+      function lcdDigits(text, colonOn) {
+        // text: znaky číslic, ':' = dvojtečka
+        let x = 0, out = '';
+        for (const ch of text) {
+          if (ch === ':') {
+            const col = colonOn ? LCD_ON : LCD_GHOST;
+            out += `<rect x="${x + 0.5}" y="5" width="2" height="2" fill="${col}"/><rect x="${x + 0.5}" y="13" width="2" height="2" fill="${col}"/>`;
+            x += 4;
+            continue;
+          }
+          const p = segPolys(x), on = SEGS[ch] || '';
+          for (const k of 'abcdefg') out += `<polygon points="${p[k]}" fill="${on.includes(k) ? LCD_ON : LCD_GHOST}"/>`;
+          x += 12;
+        }
+        return { svg: out, width: x - 2 };
+      }
+      function setLcd(svgId, text, colonOn) {
+        const el = document.getElementById(svgId);
+        const d = lcdDigits(text, colonOn);
+        el.setAttribute('viewBox', `-1 -1 ${d.width + 2} 22`);
+        el.innerHTML = d.svg;
+      }
+      let lcdLastKey = '';
+      function updateLcd() {
+        const now = new Date();
+        const colon = now.getSeconds() % 2 === 0;
+        let h = now.getHours();
+        let suffix = '';
+        if (LCD_TXT.h12) { suffix = h < 12 ? 'AM' : 'PM'; h = h % 12 || 12; }
+        const hh = (h < 10 ? (LCD_TXT.h12 ? ' ' : '0') : '') + h;
+        const mm = (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+        // odpočet do Vánoc podle místního data
+        const y = now.getFullYear(), m = now.getMonth(), dd = now.getDate();
+        const merry = m === 11 && dd >= LCD_TXT.xmasDay && dd <= 25;
+        let days = 0;
+        if (!merry) {
+          const today = new Date(y, m, dd);
+          let target = new Date(y, 11, LCD_TXT.xmasDay);
+          if (today > target) target = new Date(y + 1, 11, LCD_TXT.xmasDay);
+          days = Math.round((target - today) / 86400000);
+        }
+        const key = hh + mm + colon + days + merry;
+        if (key === lcdLastKey) return;
+        lcdLastKey = key;
+        setLcd('lcd-clock', hh + ':' + mm, colon);
+        document.getElementById('lcd-clock-label').textContent = LCD_TXT.h12 ? `${LCD_TXT.time} ${suffix}` : LCD_TXT.time;
+        if (merry) {
+          setLcd('lcd-days', '   ', false);
+          document.getElementById('lcd-days-label').textContent = LCD_TXT.merry.join(' ');
+        } else {
+          const txt = String(days).padStart(3, ' ');
+          setLcd('lcd-days', txt, false);
+          document.getElementById('lcd-days-label').textContent = LCD_TXT.unit(days) + ' ' + LCD_TXT.to;
+        }
+      }
+      // displej skrýt, pokud by zasahoval do ovládání (malé telefony)
+      function fitLcd() {
+        [['lcd-left', 'touch-left'], ['lcd-right', 'touch-right']].forEach(([lid, pid]) => {
+          const l = document.getElementById(lid), p = document.getElementById(pid);
+          if (!l.getClientRects().length) return;
+          const lr = l.getBoundingClientRect(), pr = p.getBoundingClientRect();
+          const clash = pr.height > 0 && lr.bottom > pr.top - 6;
+          l.classList.toggle('lcd-nofit', clash || lr.width < 44);
+        });
+      }
+      updateLcd();
+      setInterval(() => { updateLcd(); fitLcd(); }, 500);
+      window.addEventListener('resize', () => setTimeout(fitLcd, 50));
+
+      // Zvuk probudit při každém doteku či klávese (iPhone ho jinak nechá spát)
+      ['pointerdown', 'touchend', 'keydown'].forEach(ev => {
+        window.addEventListener(ev, () => audio.wake(), { capture: true, passive: true });
+      });
+      window.addEventListener('pageshow', () => audio.wake());
 
       // Načíst první úroveň na pozadí a spustit hlavní smyčku
       loadLevel(0, false);

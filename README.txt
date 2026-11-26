@@ -97,6 +97,10 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
     Prohodit šipky - vymění nahoru/dolů a vlevo/vpravo
     mezi stranami. Volba se pamatuje.
 
+10) Na šířku jsou nahoře LCD displeje jako u digitálních
+    her z 80. let: vpravo hodiny, vlevo odpočet dní do Vánoc.
+    Čas se bere z telefonu, takže je vždy místní.
+
 
 --------------------------------------------------------------
  3. APLIKACE PRO ANDROID TV (APK)
@@ -165,8 +169,8 @@ Vánoční 8bitová hra ve stylu Boulder Dash: 12 úrovní, česky i anglicky.
 
  4) Aby si telefony stáhly novou verzi, zvyšte v souboru sw.js
     číslo v řádku
-       const CACHE = 'santa-dash-v5.12';
-    (např. na v5.13).
+       const CACHE = 'santa-dash-v5.15';
+    (např. na v5.16).
 
 
 --------------------------------------------------------------
