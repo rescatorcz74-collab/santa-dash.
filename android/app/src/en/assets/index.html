@@ -1427,7 +1427,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.23</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.27</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -1545,6 +1545,25 @@
   </div>
 
   <script>
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 function initGame() {
   if (window._santaDashInitialized) return;
   window._santaDashInitialized = true;
@@ -4049,15 +4068,15 @@ function initGame() {
         "######################",
         "#AAAAAAAAAAAAAAAAAAAA#",
         "#AAAAAAAAAAAAAAAAAAAA#",
-        "#S.H.TAAAAAA##########",
+        "#S.H..AAAAAA##########",
         "#.T.H.AAAAAA   #.#   #",
         "#H...HAAAAAA #M#H#M# #",
         "#..T..AAAAAA K ... K #",
         "#.H.T.AAAAAA   #.#   #",
         "#H..H.AAAAAA####.#####",
         "#.T.H.AAAAAA.K.#H#####",
-        "#H.H.TAAAAAA...#.#####",
-        "#H.H.H#N..AA.H...XXXC#",
+        "#H.H..AAAAAA...#.#####",
+        "#H.H.H.N..AA.H...XXXC#",
         "#..H.H.H.PAA##########",
         "######################"
       ]
@@ -4141,7 +4160,10 @@ function initGame() {
     practiceTitle: "⭐ SECRET LEVEL",
     practiceWin: "Santa is rescued! Practice games are not saved to the high scores.",
     practiceLose: "Practice games are not saved to the high scores.",
-    masterNote: "👑 = XMAS MASTER"
+    masterNote: "👑 = XMAS MASTER",
+    finale: "MERRY CHRISTMAS!",
+    introLichens: (n, t) => `🌿 ${n} lichens   ⏱ ${t} s`,
+    finaleSkip: "tap to continue"
   };
   function fmtPoints(n) {
     return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -5897,6 +5919,433 @@ Time bonus: +${timeBonus} pts`;
     ctx.fillStyle = "rgba(255,255,255,0.35)";
     ctx.fillRect(cx - 4, cy + 8, 8, 10);
   }
+  const FINALE_LEN = 12;
+  const FINALE_FLY_START = 3;
+  const FINALE_FLY_LEN = 6.2;
+  let finaleT = 0;
+  let finaleGifts = [];
+  let finaleSparks = [];
+  let finaleGiftTimer = 0;
+  let finaleCues = {};
+  const FINALE_GIFT_COLORS = [["#ef233c", "#ffd166"], ["#06d6a0", "#ffffff"], ["#4cc9f0", "#ef233c"], ["#c77dff", "#ffd166"], ["#ffd166", "#d90429"]];
+  function startFinale() {
+    finaleT = 0;
+    finaleGifts = [];
+    finaleSparks = [];
+    finaleGiftTimer = 0;
+    finaleCues = {};
+    state = "FINALE";
+  }
+  function finishFinale() {
+    if (state !== "FINALE") return;
+    if (practiceSecret) {
+      showEndScreen(L13_TXT.practiceTitle, L13_TXT.practiceWin);
+    } else {
+      masterEarned = true;
+      startCredits(false);
+    }
+  }
+  function skipFinale() {
+    if (state === "FINALE" && finaleT > 1) finishFinale();
+  }
+  const FIN_S = { x: 383, y: 420 };
+  const FIN_C = { x: 560, y: 205, r: 95 };
+  const FIN_M = { x: 808, y: 118 };
+  function finalePath(u) {
+    u = Math.max(0, Math.min(1, u));
+    let x, y, k;
+    if (u < 0.22) {
+      const v = u / 0.22;
+      const a = { x: FIN_S.x, y: FIN_S.y }, c = { x: 470, y: 420 }, b = { x: FIN_C.x, y: FIN_C.y + FIN_C.r };
+      x = (1 - v) * (1 - v) * a.x + 2 * (1 - v) * v * c.x + v * v * b.x;
+      y = (1 - v) * (1 - v) * a.y + 2 * (1 - v) * v * c.y + v * v * b.y;
+      k = 4.2 + (1.25 - 4.2) * v;
+    } else if (u < 0.62) {
+      const v = (u - 0.22) / 0.4;
+      const th = Math.PI / 2 - v * Math.PI * 2;
+      x = FIN_C.x + FIN_C.r * Math.cos(th);
+      y = FIN_C.y + FIN_C.r * Math.sin(th);
+      k = 1.25;
+    } else {
+      const v = (u - 0.62) / 0.38;
+      const a = { x: FIN_C.x, y: FIN_C.y + FIN_C.r }, c1 = { x: 720, y: 300 }, c2 = { x: 660, y: FIN_M.y + 6 }, b = FIN_M;
+      const w0 = (1 - v) ** 3, w1 = 3 * (1 - v) ** 2 * v, w2 = 3 * (1 - v) * v * v, w3 = v ** 3;
+      x = w0 * a.x + w1 * c1.x + w2 * c2.x + w3 * b.x;
+      y = w0 * a.y + w1 * c1.y + w2 * c2.y + w3 * b.y;
+      k = 1.25 + (0.32 - 1.25) * v;
+    }
+    return { x, y, k };
+  }
+  function finaleU(t) {
+    const v = Math.max(0, Math.min(1, (t - FINALE_FLY_START) / FINALE_FLY_LEN));
+    return v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;
+  }
+  function finaleState(t) {
+    const u = finaleU(t);
+    const P = finalePath(u);
+    const Q = finalePath(Math.min(1, u + 4e-3));
+    const R = finalePath(Math.max(0, u - 4e-3));
+    let ang = 0;
+    if (t > FINALE_FLY_START + 0.05) ang = Math.atan2(Q.y - R.y, Q.x - R.x);
+    return __spreadProps(__spreadValues({}, P), { ang, u, vx: Q.x - R.x, vy: Q.y - R.y });
+  }
+  function finaleLocal(S, lx, ly) {
+    const c = Math.cos(S.ang), sn = Math.sin(S.ang);
+    return { x: S.x + (lx * c - ly * sn) * S.k, y: S.y + (lx * sn + ly * c) * S.k };
+  }
+  function updateFinale(dt) {
+    finaleT += dt;
+    const S = finaleState(finaleT);
+    if (finaleT >= 1.2 && !finaleCues.wink) {
+      finaleCues.wink = true;
+      audio.playStarCollect();
+    }
+    if (finaleT >= FINALE_FLY_START && !finaleCues.go) {
+      finaleCues.go = true;
+      audio.playSleighPull();
+    }
+    if (finaleT >= FINALE_FLY_START + FINALE_FLY_LEN + 0.2 && !finaleCues.end) {
+      finaleCues.end = true;
+      audio.playWin();
+    }
+    if (S.u > 0.03 && S.u < 0.97) {
+      finaleGiftTimer -= dt;
+      if (finaleGiftTimer <= 0) {
+        finaleGiftTimer = 0.2 + Math.random() * 0.12;
+        const o = finaleLocal(S, -26, -26);
+        finaleGifts.push({
+          x: o.x,
+          y: o.y,
+          vx: S.vx * 18 + (Math.random() * 80 - 40),
+          vy: S.vy * 18 - 40 - Math.random() * 60,
+          rot: Math.random() * 6,
+          vr: Math.random() * 8 - 4,
+          size: Math.max(9, 13 * S.k),
+          col: FINALE_GIFT_COLORS[Math.floor(Math.random() * FINALE_GIFT_COLORS.length)]
+        });
+        if (finaleGifts.length % 3 === 0) audio.playGift();
+      }
+    }
+    for (const g of finaleGifts) {
+      g.vy += 520 * dt;
+      g.x += g.vx * dt;
+      g.y += g.vy * dt;
+      g.rot += g.vr * dt;
+    }
+    finaleGifts = finaleGifts.filter((g) => g.y < 700);
+    if (finaleT > FINALE_FLY_START && S.u < 1) {
+      const o = finaleLocal(S, -40, 14);
+      finaleSparks.push({ x: o.x + Math.random() * 6 - 3, y: o.y + Math.random() * 6 - 3, life: 0.7, max: 0.7 });
+    }
+    for (const p of finaleSparks) p.life -= dt;
+    finaleSparks = finaleSparks.filter((p) => p.life > 0);
+    if (finaleT >= FINALE_LEN) finishFinale();
+  }
+  const FIN_PX = 2;
+  const FIN_BOX = { x: -56, y: -60, w: 156, h: 84 };
+  let finCanvas = null, finCtx = null;
+  function renderFinaleSprite(timeSec, wink, flying) {
+    if (!finCanvas) {
+      finCanvas = document.createElement("canvas");
+      finCanvas.width = FIN_BOX.w * FIN_PX;
+      finCanvas.height = FIN_BOX.h * FIN_PX;
+      finCtx = finCanvas.getContext("2d", { willReadFrequently: true });
+    }
+    const o = finCtx;
+    o.setTransform(1, 0, 0, 1, 0, 0);
+    o.clearRect(0, 0, finCanvas.width, finCanvas.height);
+    o.setTransform(FIN_PX, 0, 0, FIN_PX, -FIN_BOX.x * FIN_PX, -FIN_BOX.y * FIN_PX);
+    o.lineCap = "round";
+    o.lineJoin = "round";
+    const R = (x, y, w, h, c) => {
+      o.fillStyle = c;
+      o.fillRect(x, y, w, h);
+    };
+    const E = (cx, cy, rx, ry, c, rot = 0) => {
+      o.fillStyle = c;
+      o.beginPath();
+      o.ellipse(cx, cy, rx, ry, rot, 0, Math.PI * 2);
+      o.fill();
+    };
+    const P = (pts, c) => {
+      o.fillStyle = c;
+      o.beginPath();
+      o.moveTo(pts[0][0], pts[0][1]);
+      for (const q of pts.slice(1)) o.lineTo(q[0], q[1]);
+      o.closePath();
+      o.fill();
+    };
+    const L = (pts, c, w) => {
+      o.strokeStyle = c;
+      o.lineWidth = w;
+      o.beginPath();
+      o.moveTo(pts[0][0], pts[0][1]);
+      for (const q of pts.slice(1)) o.lineTo(q[0], q[1]);
+      o.stroke();
+    };
+    o.save();
+    o.translate(46, -24);
+    const gal = flying ? Math.sin(timeSec * 14) * 0.55 : Math.sin(timeSec * 3) * 0.06;
+    const leg = (hx, hy, ang, dark) => {
+      o.save();
+      o.translate(hx, hy);
+      o.rotate(ang);
+      R(-1.3, 0, 2.6, 10, dark ? "#6b3f1d" : "#7f4f24");
+      R(-1.5, 9, 3, 2.4, "#2b2d42");
+      o.restore();
+    };
+    leg(11, 27, -gal, true);
+    leg(29, 27, gal, true);
+    E(5, 19.5, 2.6, 2.2, "#f8f9fa");
+    E(20, 24, 15, 8.5, "#8d5524");
+    E(18, 19.5, 11, 3, "#a47148");
+    E(21, 28, 10, 3.6, "#c68b59");
+    leg(15, 28, gal * 0.8, false);
+    leg(33, 28, -gal * 0.8, false);
+    P([[27, 22], [33, 9], [39, 11], [36, 26]], "#8d5524");
+    E(37.5, 9.5, 5.2, 4.6, "#8d5524");
+    E(42.5, 11.8, 4.2, 3.1, "#a47148");
+    E(34.2, 5.8, 2.8, 1.3, "#7f4f24", -0.5);
+    L([[35.5, 5.5], [33.5, -1.5], [30.5, -5]], "#e6ccb2", 1.4);
+    L([[33.8, -1], [36, -5]], "#e6ccb2", 1.2);
+    L([[34.6, 1.8], [30.8, 0.6]], "#e6ccb2", 1.2);
+    L([[39, 5.5], [40.5, -1.5], [43.5, -5]], "#d9b99b", 1.4);
+    L([[40.5, -1.5], [38.6, -5.2]], "#d9b99b", 1.2);
+    L([[39.8, 1.6], [43.4, 0.4]], "#d9b99b", 1.2);
+    E(38.6, 8.4, 1.3, 1.4, "#ffffff");
+    R(38.8, 7.7, 1, 1.6, "#1b1b1b");
+    R(39.1, 7.8, 0.5, 0.5, "#ffffff");
+    const bright = Math.floor(timeSec * 4) % 2 === 0;
+    if (bright) E(47, 11.4, 3.2, 3, "#ff8fa3");
+    E(47, 11.4, 2.1, 2, bright ? "#ff4d6d" : "#d90429");
+    R(46.4, 10.3, 0.8, 0.6, "#ffffff");
+    L([[29.5, 17], [35.5, 19.5]], "#d62828", 2.4);
+    E(32.6, 21, 1.7, 1.7, "#ffd166");
+    R(32.1, 21.6, 1, 0.7, "#6c4a0a");
+    o.restore();
+    L([[38, -3], [57, -4]], "#6f4518", 1.4);
+    L([[38, 3], [59, 0]], "#6f4518", 1.4);
+    for (const bx of [44, 50]) {
+      E(bx, -3.6, 1.5, 1.5, "#ffd166");
+      R(bx - 0.5, -3.2, 1, 0.6, "#6c4a0a");
+    }
+    const box = (x, y, w, h, c, sh, rib) => {
+      R(x, y, w, h, c);
+      R(x + w - 2, y, 2, h, sh);
+      R(x + w / 2 - 0.8, y, 1.6, h, rib);
+      R(x, y + h / 2 - 0.8, w, 1.6, rib);
+      E(x + w / 2 - 1.8, y - 0.8, 1.9, 1.2, rib, 0.4);
+      E(x + w / 2 + 1.8, y - 0.8, 1.9, 1.2, rib, -0.4);
+      E(x + w / 2, y - 0.4, 0.9, 0.9, sh);
+    };
+    box(-42, -21, 15, 13, "#06d6a0", "#05a77c", "#ffffff");
+    box(-28, -23, 14, 15, "#4cc9f0", "#2a9fc4", "#ef233c");
+    box(-38, -36, 14, 14, "#ef233c", "#b5172b", "#ffd166");
+    box(-25, -34, 10, 11, "#c77dff", "#9d4edd", "#ffd166");
+    box(-32, -47, 11, 10, "#ffd166", "#e0a800", "#d90429");
+    E(-5.5, -17, 3.2, 6, "#c1121f");
+    R(-8.5, -12.5, 6, 2.2, "#f8f9fa");
+    E(-5.5, -9.5, 2.6, 2.3, "#2b2d42");
+    P([[-7, -4], [-6.5, -22], [-2.5, -26.5], [16.5, -26.5], [20.5, -22], [21, -4]], "#d62828");
+    P([[16.5, -26.5], [20.5, -22], [21, -4], [17, -4]], "#a4161a");
+    R(4, -26.5, 6, 23, "#f8f9fa");
+    R(8.2, -26.5, 1.8, 23, "#dee2e6");
+    for (const by of [-23, -19, -7]) E(7, by, 0.8, 0.8, "#ced4da");
+    R(-7, -13.5, 28, 3.2, "#1b1b1b");
+    R(3.6, -14.6, 6.8, 5.4, "#ffd166");
+    R(5.2, -13.2, 3.6, 2.6, "#1b1b1b");
+    R(4.2, -14.2, 1.4, 0.8, "#fff3b0");
+    o.save();
+    o.translate(18.5, -22);
+    o.rotate(-1 + Math.sin(timeSec * 9) * 0.35);
+    R(0, -2.6, 11, 5.2, "#d62828");
+    R(0, 1.4, 11, 1.2, "#a4161a");
+    R(10, -3.2, 3, 6.4, "#f8f9fa");
+    E(15.2, 0, 3, 3.2, "#2b2d42");
+    E(15.8, -2.6, 1.2, 1.6, "#2b2d42", 0.5);
+    o.restore();
+    E(0.5, -31, 2.6, 4.5, "#ffffff");
+    E(13.5, -31, 2.6, 4.5, "#ffffff");
+    E(7, -26.5, 8.6, 7.5, "#ffffff");
+    for (const [cx, cy] of [[-0.5, -23], [3, -20.8], [7, -19.8], [11, -20.8], [14.5, -23]]) E(cx, cy, 2.6, 2.6, "#ffffff");
+    for (const [cx, cy] of [[2.5, -24], [7, -22], [11.5, -24], [5, -26.5], [9.5, -26.5]]) E(cx, cy, 0.9, 0.9, "#dee2e6");
+    E(0.6, -35.2, 1.3, 1.9, "#f4b8a3");
+    E(13.4, -35.2, 1.3, 1.9, "#f4b8a3");
+    E(7, -36, 6.4, 5.8, "#ffd6c4");
+    E(2.9, -32.8, 1.5, 1, "#ffadad");
+    E(11.1, -32.8, 1.5, 1, wink ? "#ff8095" : "#ffadad");
+    E(4.3, -36.4, 1.35, 1.6, "#ffffff");
+    R(3.8, -36.9, 1.1, 1.8, "#1b1b1b");
+    R(4.1, -36.7, 0.5, 0.5, "#ffffff");
+    if (wink) {
+      L([[8.3, -36], [9.7, -37.1], [11.1, -36]], "#1b1b1b", 0.8);
+    } else {
+      E(9.7, -36.4, 1.35, 1.6, "#ffffff");
+      R(9.2, -36.9, 1.1, 1.8, "#1b1b1b");
+      R(9.5, -36.7, 0.5, 0.5, "#ffffff");
+    }
+    L([[2.6, -38.9], [5.9, -39.4]], "#ffffff", 1.3);
+    L([[8.1, wink ? -40.4 : -39.4], [11.4, wink ? -39.9 : -38.9]], "#ffffff", 1.3);
+    E(4.2, -31.3, 3.1, 1.6, "#ffffff", -0.3);
+    E(9.8, -31.3, 3.1, 1.6, "#ffffff", 0.3);
+    E(7, -33.1, 1.7, 1.5, "#ff8fa3");
+    R(6.3, -33.9, 0.8, 0.6, "#ffffff");
+    if (wink) {
+      o.fillStyle = "#9d0208";
+      o.beginPath();
+      o.ellipse(7, -29.2, 2.8, 1.8, 0, 0, Math.PI);
+      o.fill();
+      R(4.6, -29.3, 4.8, 0.6, "#ffffff");
+    } else {
+      L([[4.8, -29.4], [7, -28.4], [9.2, -29.4]], "#9d0208", 0.8);
+    }
+    P([[-0.5, -42.5], [14.5, -42.5], [12.5, -48], [6.5, -51.5], [-1, -52.5], [-6.5, -50.5], [-2, -47]], "#d62828");
+    P([[9, -42.5], [14.5, -42.5], [12.5, -48]], "#a4161a");
+    R(-1, -43.4, 16, 3.6, "#f8f9fa");
+    R(-1, -40.6, 16, 0.8, "#dee2e6");
+    E(-7.4, -49.8, 2.7, 2.7, "#ffffff");
+    E(-6.7, -49, 1.2, 1.2, "#dee2e6");
+    P([[-46, -11], [-43.5, -9], [30, -9], [35.5, -17], [42, -19], [41, -14], [37, -4], [32, 10], [-40, 10], [-46, 4]], "#c1121f");
+    R(-44, 4, 76, 6, "#9d0208");
+    E(-45.5, -12, 3, 3, "#c1121f");
+    o.strokeStyle = "#ffd166";
+    o.lineWidth = 1.2;
+    o.beginPath();
+    o.arc(-45.5, -12, 2.2, 0, Math.PI * 2);
+    o.stroke();
+    L([[-43.5, -9], [30, -9], [35.5, -17], [42, -19], [44, -16.5], [41.5, -14.8]], "#ffd166", 1.6);
+    L([[-40, 9.4], [32, 9.4]], "#ffd166", 1.2);
+    for (const ox of [-30, -14, 2, 18]) {
+      E(ox, 0.5, 2.2, 2.2, "#ffd166");
+      E(ox, 0.5, 1.1, 1.1, "#9d0208");
+      R(ox - 0.4, -2, 0.8, 0.8, "#fff3b0");
+    }
+    L([[-47, 17], [44, 17], [48.5, 15], [50.5, 11], [47.5, 8]], "#ffd166", 2.2);
+    L([[-45, 16.2], [43, 16.2]], "#fff3b0", 0.7);
+    for (const sx of [-34, -8, 18]) R(sx, 10, 2.2, 7, "#e0a800");
+    const img = o.getImageData(0, 0, finCanvas.width, finCanvas.height);
+    const d = img.data;
+    for (let i = 3; i < d.length; i += 4) d[i] = d[i] >= 110 ? 255 : 0;
+    o.putImageData(img, 0, 0);
+    return finCanvas;
+  }
+  function drawFinaleGroup(S, timeSec, wink) {
+    const sprite = renderFinaleSprite(timeSec, wink, finaleT > FINALE_FLY_START);
+    ctx.save();
+    ctx.translate(S.x, S.y);
+    ctx.rotate(S.ang);
+    ctx.scale(S.k, S.k);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sprite, FIN_BOX.x, FIN_BOX.y, FIN_BOX.w, FIN_BOX.h);
+    ctx.restore();
+  }
+  function drawFinale(timeSec, W, H) {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#070b26");
+    g.addColorStop(1, "#1d2366");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 70; i++) {
+      const x = i * 137.5 % W, y = i * 89.3 % (H * 0.7);
+      const on = Math.sin(timeSec * 2 + i) > -0.3;
+      ctx.fillStyle = on ? "#fdf0d5" : "#5c6b9c";
+      ctx.fillRect(x, y, i % 4 === 0 ? 3 : 2, i % 4 === 0 ? 3 : 2);
+    }
+    const glow = ctx.createRadialGradient(FIN_M.x, FIN_M.y, 40, FIN_M.x, FIN_M.y, 140);
+    glow.addColorStop(0, "rgba(253, 240, 213, 0.35)");
+    glow.addColorStop(1, "rgba(253, 240, 213, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(FIN_M.x - 140, FIN_M.y - 140, 280, 280);
+    ctx.fillStyle = "#fdf0d5";
+    ctx.beginPath();
+    ctx.arc(FIN_M.x, FIN_M.y, 62, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e9dcc0";
+    ctx.beginPath();
+    ctx.arc(FIN_M.x - 18, FIN_M.y - 12, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(FIN_M.x + 20, FIN_M.y + 16, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(FIN_M.x + 8, FIN_M.y - 28, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#151c4a";
+    ctx.beginPath();
+    ctx.moveTo(0, 520);
+    ctx.quadraticCurveTo(250, 450, 520, 505);
+    ctx.quadraticCurveTo(760, 545, W, 480);
+    ctx.lineTo(W, H);
+    ctx.lineTo(0, H);
+    ctx.fill();
+    ctx.fillStyle = "#1c1240";
+    const towers = [[640, 400, 40], [700, 370, 52], [770, 405, 40], [830, 385, 46]];
+    ctx.fillRect(630, 430, 250, 80);
+    for (const [tx, ty, tw] of towers) {
+      ctx.fillRect(tx, ty, tw, 140);
+      ctx.beginPath();
+      ctx.moveTo(tx - 5, ty + 2);
+      ctx.lineTo(tx + tw / 2, ty - 34);
+      ctx.lineTo(tx + tw + 5, ty + 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#ffb703";
+    for (const [tx, ty, tw] of towers) ctx.fillRect(tx + tw / 2 - 4, ty + 22, 8, 12);
+    ctx.fillStyle = "#e8f1ff";
+    ctx.fillRect(0, 560, W, H - 560);
+    ctx.fillStyle = "#cfe1ff";
+    for (let x = 0; x < W; x += 36) ctx.fillRect(x + 8, 566, 14, 3);
+    for (const p of finaleSparks) {
+      ctx.globalAlpha = Math.max(0, p.life / p.max);
+      ctx.fillStyle = Math.floor(p.x + p.y) % 2 ? "#ffd166" : "#ffffff";
+      ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+    }
+    ctx.globalAlpha = 1;
+    for (const gft of finaleGifts) {
+      ctx.save();
+      ctx.translate(gft.x, gft.y);
+      ctx.rotate(gft.rot);
+      const z = gft.size;
+      ctx.fillStyle = gft.col[0];
+      ctx.fillRect(-z / 2, -z / 2, z, z);
+      ctx.fillStyle = gft.col[1];
+      ctx.fillRect(-z * 0.09, -z / 2, z * 0.18, z);
+      ctx.fillRect(-z / 2, -z * 0.09, z, z * 0.18);
+      ctx.fillRect(-z * 0.3, -z / 2 - z * 0.16, z * 0.24, z * 0.16);
+      ctx.fillRect(z * 0.06, -z / 2 - z * 0.16, z * 0.24, z * 0.16);
+      ctx.restore();
+    }
+    const S = finaleState(finaleT);
+    const wink = finaleT > 1.2 && finaleT < 2.1;
+    if (S.u < 1 || finaleT < FINALE_LEN) drawFinaleGroup(S, timeSec, wink);
+    if (finaleT > 1.25 && finaleT < 2.05) {
+      const e = finaleLocal(S, 13, -40);
+      const r = 6 + 10 * Math.sin((finaleT - 1.25) / 0.8 * Math.PI);
+      ctx.fillStyle = "#fff3b0";
+      ctx.fillRect(e.x - 1.5, e.y - r, 3, r * 2);
+      ctx.fillRect(e.x - r, e.y - 1.5, r * 2, 3);
+      ctx.fillRect(e.x - r * 0.45, e.y - r * 0.45, 3, 3);
+      ctx.fillRect(e.x + r * 0.45 - 3, e.y + r * 0.45 - 3, 3, 3);
+    }
+    const tt = finaleT - (FINALE_FLY_START + FINALE_FLY_LEN);
+    if (tt > 0) {
+      ctx.globalAlpha = Math.min(1, tt / 0.8);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = PIXEL_FONT(72);
+      ctx.fillStyle = "#9d0208";
+      ctx.fillText(L13_TXT.finale, W / 2 + 4, H * 0.42 + 4);
+      ctx.fillStyle = "#ffd166";
+      ctx.fillText(L13_TXT.finale, W / 2, H * 0.42);
+      ctx.globalAlpha = 1;
+    }
+    if (finaleT > 1.2) {
+      ctx.textAlign = "center";
+      ctx.font = PIXEL_FONT(20);
+      ctx.fillStyle = "rgba(253, 240, 213, 0.6)";
+      ctx.fillText(L13_TXT.finaleSkip, W / 2, 26);
+    }
+  }
   function drawTile(type, gx, gy, timeSec, extraY = 0) {
     var _a;
     const px = gx * TILE_SIZE;
@@ -6540,6 +6989,11 @@ Time bonus: +${timeBonus} pts`;
     ctx.scale(sx, sy);
     ctx.fillStyle = "#09122c";
     ctx.fillRect(0, 0, worldW, worldH);
+    if (state === "FINALE") {
+      drawFinale(timeSec, worldW, worldH);
+      ctx.restore();
+      return;
+    }
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
         const t = grid[y][x];
@@ -6652,11 +7106,11 @@ Time bonus: +${timeBonus} pts`;
       ctx.fillText(title, worldW / 2, worldH * 0.46);
       ctx.font = PIXEL_FONT(26);
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(`🎁 ${lvl.required} presents   ⏱ ${lvl.time} s`, worldW / 2, worldH * 0.55);
+      ctx.fillText(lvl.lichens ? L13_TXT.introLichens(lvl.lichens, lvl.time) : `🎁 ${lvl.required} presents   ⏱ ${lvl.time} s`, worldW / 2, worldH * 0.55);
       if (lvl.hint) {
         ctx.fillStyle = "#a8dadc";
         ctx.font = PIXEL_FONT(24);
-        const maxW = worldW * 0.8;
+        const maxW = worldW * 0.76;
         const words = lvl.hint.split(" ");
         const lines = [""];
         for (const w of words) {
@@ -6800,6 +7254,8 @@ Time bonus: +${timeBonus} pts`;
           showEndScreen("GAME OVER", "Santa got snowed under.");
         }
       }
+    } else if (state === "FINALE") {
+      updateFinale(dt);
     } else if (state === "TEASER") {
       stateBannerTimer -= dt;
       if (stateBannerTimer <= 0) startCredits(false);
@@ -6807,8 +7263,8 @@ Time bonus: +${timeBonus} pts`;
       stateBannerTimer -= dt;
       if (lichensRequired > 0) updateSecret(dt);
       if (stateBannerTimer <= 0) {
-        if (practiceSecret) {
-          showEndScreen(L13_TXT.practiceTitle, L13_TXT.practiceWin);
+        if (LEVELS[currentLevelIdx].secret) {
+          startFinale();
         } else if (currentLevelIdx + 1 < REGULAR_LEVELS) {
           loadLevel(currentLevelIdx + 1, true);
           beginIntro();
@@ -7464,6 +7920,10 @@ ${L13_TXT.teaserScore(score)}`;
   const isBack = (e) => BACK_KEYS.includes(e.key) || BACK_KEYS.includes(e.code);
   const isConfirm = (e) => e.code === "Enter" || e.code === "NumpadEnter" || e.key === "Enter";
   function onKeyDown(e) {
+    if (state === "FINALE") {
+      skipFinale();
+      return;
+    }
     document.body.classList.add("kb-nav");
     const target = e.target || document.activeElement;
     const onButton = target && target.tagName === "BUTTON" && target.closest(".overlay");
@@ -7560,6 +8020,9 @@ ${L13_TXT.teaserScore(score)}`;
     };
   }
   window.addEventListener("keydown", (e) => onKeyDown(normalizeKey(e)));
+  window.addEventListener("pointerdown", () => {
+    if (state === "FINALE") skipFinale();
+  });
   window.addEventListener("keyup", (e) => onKeyUp(normalizeKey(e)));
   window.santaStart = () => {
     document.body.classList.add("kb-nav");
