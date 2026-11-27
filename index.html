@@ -1427,7 +1427,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.22</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.23</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2684,8 +2684,8 @@
             "#....G..T....T..G....#",
             "#.##################.#",
             "#.#   #        #   #.#",
-            "#.#M  #   D    #  M#.#",
-            "#..  U#     D  .   ..#",
+            "#.#M# #   D    # #M#.#",
+            "#.. U #     D  .   ..#",
             "#.#   #        #   #.#",
             "#.##################.#",
             "#..G...T....G....T.G.#",
@@ -2787,8 +2787,8 @@
             "#AAAAAAAAAAAAAAAAAAAA#",
             "#S.H.TAAAAAA##########",
             "#.T.H.AAAAAA   #.#   #",
-            "#H...HAAAAAA  M#H#M  #",
-            "#..T..AAAAAAK  ...  K#",
+            "#H...HAAAAAA #M#H#M# #",
+            "#..T..AAAAAA K ... K #",
             "#.H.T.AAAAAA   #.#   #",
             "#H..H.AAAAAA####.#####",
             "#.T.H.AAAAAA.K.#H#####",
@@ -2931,6 +2931,8 @@
       let physicsTimer = 0;
       const PHYSICS_INTERVAL = 155;
       let enemyTimer = 0;
+      let patrolTimer = 0;
+      const PATROL_INTERVAL = 450; // strážci komor chodí pomaleji a pravidelně
       const ENEMY_INTERVAL = 330; // skřítci se pohybují zhruba poloviční rychlostí než dřív
 
       // Ježíškova dílna: 'none' | 'dormant' | 'active' | 'spent'
@@ -3191,8 +3193,23 @@
               for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
             }
             e.home = home;
+            // Strážce komory obchází její okraj pořád stejným směrem (po směru hodin)
+            const cells = [...home].map(k => [k % COLS, Math.floor(k / COLS)]);
+            const minX = Math.min(...cells.map(c => c[0])), maxX = Math.max(...cells.map(c => c[0]));
+            const minY = Math.min(...cells.map(c => c[1])), maxY = Math.max(...cells.map(c => c[1]));
+            const ring = [];
+            for (let x = minX; x <= maxX; x++) ring.push([x, minY]);
+            for (let y = minY + 1; y <= maxY; y++) ring.push([maxX, y]);
+            for (let x = maxX - 1; x >= minX; x--) ring.push([x, maxY]);
+            for (let y = maxY - 1; y > minY; y--) ring.push([minX, y]);
+            const start = ring.findIndex(([x, y]) => x === e.x && y === e.y);
+            if (start >= 0 && ring.every(([x, y]) => home.has(y * COLS + x))) {
+              e.cycle = ring;
+              e.ci = start;
+            }
           }
         }
+        patrolTimer = 0;
 
         updateHUD();
         if (playMusic && !audio.musicEnabled) {
@@ -3646,6 +3663,7 @@
 
         for (enemy of [...enemies]) {
           if (!enemies.includes(enemy)) continue;
+          if (enemy.cycle) continue; // strážce komory má vlastní obchůzku
           const fwd = enemy.dir;
           const left = (fwd + 3) % 4;
           const right = (fwd + 1) % 4;
@@ -3675,6 +3693,26 @@
           }
         }
         checkEnemyContacts();
+      }
+
+      function movePatrolElves() {
+        let moved = false;
+        for (const e of enemies) {
+          if (!e.cycle) continue;
+          const ni = (e.ci + 1) % e.cycle.length;
+          const [nx, ny] = e.cycle[ni];
+          if (grid[ny]?.[nx] !== TILE.EMPTY) continue; // něco mu stojí v cestě – počká
+          const ddx = nx - e.x, ddy = ny - e.y;
+          grid[e.y][e.x] = TILE.EMPTY;
+          falling[e.y][e.x] = false;
+          e.dir = DIRS4.findIndex(d => d.dx === ddx && d.dy === ddy);
+          e.x = nx;
+          e.y = ny;
+          e.ci = ni;
+          grid[ny][nx] = TILE.ENEMY;
+          moved = true;
+        }
+        if (moved) checkEnemyContacts();
       }
 
       // ---------------------------------------------------------
@@ -5718,6 +5756,11 @@
           }
 
           enemyTimer += dt * 1000;
+          patrolTimer += dt * 1000;
+          if (state === 'PLAYING' && patrolTimer >= PATROL_INTERVAL) {
+            patrolTimer -= PATROL_INTERVAL;
+            movePatrolElves();
+          }
           if (state === 'PLAYING' && enemyTimer >= ENEMY_INTERVAL) {
             enemyTimer -= ENEMY_INTERVAL;
             moveEnemies();
