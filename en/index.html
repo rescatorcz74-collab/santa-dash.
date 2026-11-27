@@ -1329,7 +1329,7 @@
           <span>🎮 Remote / gamepad: arrows = move, OK = confirm, Back = pause</span>
           <span>🎁 Present: Collect</span>
           <span>🍭 Candy cane: +15s &amp; +200 pts (max 3× per level)</span>
-          <span>⭐ Christmas Star: +600 pts &amp; restores a lost life – appears once, far away, and won't wait long!</span>
+          <span>⭐ Christmas Star: +700 pts &amp; restores a lost life – appears once, far away, and won't wait long!</span>
           <span>🎄 Tree: Falls / Push</span>
           <span>🦌 Reindeer &amp; 🛷 Sleigh: Push the reindeer to the sleigh</span>
           <span>👺 Elf: Drop a tree on it = 9 presents!</span>
@@ -1430,7 +1430,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.31</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.33</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2967,7 +2967,7 @@
         practiceLose: 'Practice games are not saved to the high scores.',
         masterNote: '👑 = XMAS MASTER',
         cleanLevel: '✨ CLEAN LEVEL! +1,500 pts',
-        reindeerElf: 'REINDEER STOMP! ELF SQUASHED +1,200 🦌',
+        reindeerElf: 'REINDEER STOMP! ELF SQUASHED +1,400 🦌',
         reindeerExit: 'NOT THERE – IT WOULD BLOCK THE CHIMNEY!',
         finale: 'MERRY CHRISTMAS!',
         introLichens: (n, t) => `🌿 ${n} lichens   ⏱ ${t} s`,
@@ -3031,7 +3031,7 @@
       let candiesSpawned = 0;
 
       // Vánoční hvězda: jednou za úroveň, vždy daleko od Santy
-      const STAR_POINTS = 600;   // 3× víc než cukrová hůlka
+      const STAR_POINTS = 700;   // odměna za náročné doběhnutí hvězdy
       const MAX_LIVES = 3; // hvězda jen vrací ztracený život – víc než na začátku hry mít nelze
       let star = null;           // { x, y, life, maxLife }
       let starSpawned = false;
@@ -3676,7 +3676,7 @@
 
       // Sob dopadl na skřítka: velká odměna (jako dvě hvězdy) a dárky kolem –
       // jen pod sobem zůstane volno, aby mohl dopadnout až k saním
-      const REINDEER_ELF_BONUS = 1200;
+      const REINDEER_ELF_BONUS = 1400;   // jako dvě hvězdy
       function reindeerCrushElf(x, ey) {
         // políčka, která musí zůstat volná: cesta soba dolů a cesta, kudy se odtáhnou saně
         const keepCells = [[x, ey], [x, ey + 1]];
@@ -3690,7 +3690,7 @@
           return t === TILE.EMPTY || t === TILE.ENEMY;
         });
         explodeEnemy(x, ey);
-        score += REINDEER_ELF_BONUS - 500;     // celkem 1 200 místo běžných 500
+        score += REINDEER_ELF_BONUS - 500;     // celkem 1 400 místo běžných 500
         for (const [kx, ky] of keep) {
           if (grid[ky][kx] === TILE.GIFT) grid[ky][kx] = TILE.EMPTY;
         }

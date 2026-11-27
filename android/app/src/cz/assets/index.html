@@ -1329,7 +1329,7 @@
           <span>🎮 Ovladač / gamepad: šipky = pohyb, OK = potvrdit, Zpět = pauza</span>
           <span>🎁 Dárek: Sebrat</span>
           <span>🍭 Hůlka: +15s &amp; +200b (nejvýš 3× za úroveň)</span>
-          <span>⭐ Vánoční hvězda: +600b &amp; vrátí ztracený život – objeví se jednou, daleko a nečeká dlouho!</span>
+          <span>⭐ Vánoční hvězda: +700b &amp; vrátí ztracený život – objeví se jednou, daleko a nečeká dlouho!</span>
           <span>🎄 Stromek: Padá / Tlačit</span>
           <span>🦌 Sob &amp; 🛷 Sáně: Dostrkat soba k saním</span>
           <span>👺 Skřítek: Shodit na něj stromek = 9 dárků!</span>
@@ -1430,7 +1430,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.31</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.33</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -4274,7 +4274,7 @@ function initGame() {
     practiceLose: "Tréninková hra se do tabulky rekordů nezapisuje.",
     masterNote: "👑 = XMAS MASTER",
     cleanLevel: "✨ ČISTÝ LEVEL! +1 500 b.",
-    reindeerElf: "SOB ROZDUPAL SKŘÍTKA! +1 200 🦌",
+    reindeerElf: "SOB ROZDUPAL SKŘÍTKA! +1 400 🦌",
     reindeerExit: "SEM NE – SOB BY ZATARASIL KRB!",
     finale: "VESELÉ VÁNOCE!",
     introLichens: (n, t) => `🌿 ${n} lišejníků   ⏱ ${t} s`,
@@ -4334,7 +4334,7 @@ function initGame() {
   let ovenZone = /* @__PURE__ */ new Set();
   let candySpawnTimer = 7;
   let candiesSpawned = 0;
-  const STAR_POINTS = 600;
+  const STAR_POINTS = 700;
   const MAX_LIVES = 3;
   let star = null;
   let starSpawned = false;
@@ -4964,7 +4964,7 @@ function initGame() {
     }
     updateHUD();
   }
-  const REINDEER_ELF_BONUS = 1200;
+  const REINDEER_ELF_BONUS = 1400;
   function reindeerCrushElf(x, ey) {
     const keepCells = [[x, ey], [x, ey + 1]];
     if (!sleighPulled && sleighPos) {

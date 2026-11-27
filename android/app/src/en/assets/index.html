@@ -1329,7 +1329,7 @@
           <span>🎮 Remote / gamepad: arrows = move, OK = confirm, Back = pause</span>
           <span>🎁 Present: Collect</span>
           <span>🍭 Candy cane: +15s &amp; +200 pts (max 3× per level)</span>
-          <span>⭐ Christmas Star: +600 pts &amp; restores a lost life – appears once, far away, and won't wait long!</span>
+          <span>⭐ Christmas Star: +700 pts &amp; restores a lost life – appears once, far away, and won't wait long!</span>
           <span>🎄 Tree: Falls / Push</span>
           <span>🦌 Reindeer &amp; 🛷 Sleigh: Push the reindeer to the sleigh</span>
           <span>👺 Elf: Drop a tree on it = 9 presents!</span>
@@ -1430,7 +1430,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.31</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.33</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -4273,7 +4273,7 @@ function initGame() {
     practiceLose: "Practice games are not saved to the high scores.",
     masterNote: "👑 = XMAS MASTER",
     cleanLevel: "✨ CLEAN LEVEL! +1,500 pts",
-    reindeerElf: "REINDEER STOMP! ELF SQUASHED +1,200 🦌",
+    reindeerElf: "REINDEER STOMP! ELF SQUASHED +1,400 🦌",
     reindeerExit: "NOT THERE – IT WOULD BLOCK THE CHIMNEY!",
     finale: "MERRY CHRISTMAS!",
     introLichens: (n, t) => `🌿 ${n} lichens   ⏱ ${t} s`,
@@ -4333,7 +4333,7 @@ function initGame() {
   let ovenZone = /* @__PURE__ */ new Set();
   let candySpawnTimer = 7;
   let candiesSpawned = 0;
-  const STAR_POINTS = 600;
+  const STAR_POINTS = 700;
   const MAX_LIVES = 3;
   let star = null;
   let starSpawned = false;
@@ -4963,7 +4963,7 @@ function initGame() {
     }
     updateHUD();
   }
-  const REINDEER_ELF_BONUS = 1200;
+  const REINDEER_ELF_BONUS = 1400;
   function reindeerCrushElf(x, ey) {
     const keepCells = [[x, ey], [x, ey + 1]];
     if (!sleighPulled && sleighPos) {
