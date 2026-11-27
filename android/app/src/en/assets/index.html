@@ -424,6 +424,22 @@
       display: none;
     }
 
+    .hidden-secret { display: none !important; }
+    #end-msg { white-space: pre-line; }
+    .level-btn.locked-secret { border-style: dashed; border-color: #c77dff; color: #e0aaff; background: #24123f; }
+    .level-btn.locked-secret:hover { background: #2f1852; }
+    #toast {
+      position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%);
+      z-index: 9999; max-width: 90vw; padding: 12px 18px;
+      background: rgba(20, 10, 45, 0.96); border: 3px solid #c77dff; border-radius: 10px;
+      color: #fdf0d5; font-family: 'Courier New', monospace; font-weight: bold; font-size: 18px;
+      text-align: center; box-shadow: 0 0 18px rgba(199, 125, 255, 0.5);
+      pointer-events: none; opacity: 0; transition: opacity 0.25s;
+    }
+    #toast.show { opacity: 1; }
+    /* tajná úroveň má v liště víc položek – číslo úrovně tam není potřeba */
+    body.secret-level .hud-item:has(#hud-level) { display: none; }
+    #btn-secret { border-color: #c77dff; color: #e0aaff; box-shadow: 0 0 10px rgba(199, 125, 255, 0.45); }
     .hud-item.bonus-flash span.val {
       color: var(--accent-green);
       text-shadow: 0 0 10px var(--accent-green), 0 0 18px var(--accent-gold);
@@ -1215,13 +1231,14 @@
     <div id="hud">
       <div class="hud-group">
         <div class="hud-item">Level: <span class="val" id="hud-level">–</span></div>
-        <div class="hud-item" id="hud-gifts-box">Presents: <span class="val" id="hud-gifts">0/10</span></div>
+        <div class="hud-item" id="hud-gifts-box"><span id="hud-gifts-label">Presents</span>: <span class="val" id="hud-gifts">0/10</span></div>
         <div class="hud-item">Time: <span class="val" id="hud-time">120</span>s</div>
         <div class="hud-item">Score: <span class="val" id="hud-score">0</span></div>
         <div class="hud-item hidden-item" id="hud-workshop-box" title="Santa's Workshop">🔨 Workshop: <span class="val" id="hud-workshop">idle</span></div>
         <div class="hud-item hidden-item" id="hud-plank-box" title="Catapult plank">🪵 Plank: <span class="val" id="hud-plank">–</span></div>
         <div class="hud-item hidden-item" id="hud-lid-box" title="Oven lid">🍳 Lid: <span class="val" id="hud-lid">–</span></div>
         <div class="hud-item hidden-item" id="hud-key-box" title="Gate key">🔑 Key: <span class="val" id="hud-key">–</span></div>
+        <div class="hud-item hidden-item" id="hud-cannon-box" title="Snow cannon">❄️ Cannon: <span class="val" id="hud-cannon">3</span></div>
         <div class="hud-item">Lives: <span class="val" id="hud-lives">❤️❤️❤️</span></div>
       </div>
       <div class="hud-buttons">
@@ -1297,6 +1314,7 @@
         <p class="hs-note ios-hint" id="ios-install-hint">📲 On iPhone: tap Share ⬆️, then “Add to Home Screen”.</p>
         <p class="hs-note tv-only">Remote: OK = edit name (▲▼ letter, ◀▶ move), OK again = done.</p>
         <button type="button" class="retro-btn primary" id="btn-start">▶ PLAY</button>
+        <button type="button" class="retro-btn hidden-secret" id="btn-secret" style="margin-top:8px">⭐ Secret level</button>
         <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center">
           <button type="button" class="retro-btn hidden-install" id="btn-install">📲 Install app</button>
           <button type="button" class="retro-btn" id="btn-scores">🏆 High Scores</button>
@@ -1409,7 +1427,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.19</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.22</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -4010,6 +4028,39 @@ function initGame() {
         "#####...G.....    Y  #",
         "######################"
       ]
+    },
+    {
+      name: "13. The Elf King's Castle",
+      hint: "Eat the lichens – they give the reindeer strength and speed. Then rescue Santa!",
+      required: 15,
+      // lišejníků na plnou sílu
+      time: 240,
+      secret: true,
+      reindeerHero: true,
+      // hraje se za soba
+      lichens: 15,
+      elvesStayHome: true,
+      king: { y: 2, x0: 6, x1: 9, step: 0.5 },
+      // král elfů létá na plošince
+      cannonShots: 3,
+      bridge: [[10, 11], [11, 11]],
+      chasmCols: [10, 11],
+      map: [
+        "######################",
+        "#AAAAAAAAAAAAAAAAAAAA#",
+        "#AAAAAAAAAAAAAAAAAAAA#",
+        "#S.H.TAAAAAA##########",
+        "#.T.H.AAAAAA   #.#   #",
+        "#H...HAAAAAA  M#H#M  #",
+        "#..T..AAAAAAK  ...  K#",
+        "#.H.T.AAAAAA   #.#   #",
+        "#H..H.AAAAAA####.#####",
+        "#.T.H.AAAAAA.K.#H#####",
+        "#H.H.TAAAAAA...#.#####",
+        "#H.H.H#N..AA.H...XXXC#",
+        "#..H.H.H.PAA##########",
+        "######################"
+      ]
     }
   ];
   const TILE = {
@@ -4054,9 +4105,68 @@ function initGame() {
     // Vánoční hvězda – vzácný bonus, 1× za úroveň
     LID_ITEM: 25,
     // Poklop na pec ležící na zemi (Santa ho sebere)
-    LID: 26
+    LID: 26,
     // Poklop přiklopený na otvoru pece
+    CAPTIVE: 27,
+    // Uvězněný Santa (tajný level)
+    LICHEN: 28,
+    // Lišejník – síla a rychlost pro soba
+    CANNON: 29,
+    // Sněžné dělo – střílí kolmo vzhůru
+    BRIDGE: 30
+    // Most přes propast (spustí ho páka)
   };
+  const L13_TXT = {
+    lichenLabel: "Lichens",
+    giftLabel: "Presents",
+    strong: "THE REINDEER IS STRONG! 💪",
+    weak: (n, r) => `TOO WEAK – EAT LICHENS 🌿 ${n}/${r}`,
+    bridge: "BRIDGE LOWERED! 🌉",
+    fire: "FIRE! ❄️",
+    noBalls: "OUT OF SNOWBALLS ❄️",
+    kingHit: "THE ELF KING IS DEFEATED! 👑💥",
+    elvesGone: "THE ELVES VANISHED!",
+    miss: "MISSED!",
+    freed: "SANTA IS FREE! 🎅",
+    keys: (n) => `GOT ${n}`,
+    unlocked: "SECRET LEVEL UNLOCKED! ⭐",
+    secretLevel: "SECRET LEVEL",
+    levelOf: (i, n) => `LEVEL ${i} / ${n}`,
+    teaser: "They say someone is waiting at the Elf King’s castle… (60,000 points)",
+    teaserLine: "Someone waits at the Elf King’s castle…",
+    teaserScore: (n) => `You have ${fmtPoints(n)} pts – you need 60,000.`,
+    locked: "🔒 Only 60,000 points in a game unlock the secret level",
+    masterTitle: "🦌 SANTA IS RESCUED! 🎅",
+    masterMsg: "The reindeer freed Santa from the Elf King’s castle! You earn the title XMAS MASTER 👑",
+    practiceTitle: "⭐ SECRET LEVEL",
+    practiceWin: "Santa is rescued! Practice games are not saved to the high scores.",
+    practiceLose: "Practice games are not saved to the high scores.",
+    masterNote: "👑 = XMAS MASTER"
+  };
+  function fmtPoints(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+  const REGULAR_LEVELS = 12;
+  const SECRET_LEVEL_IDX = 12;
+  const SECRET_SCORE = 6e4;
+  const SECRET_KEY = "santaDash.secret13.v1";
+  let practiceSecret = false;
+  let masterEarned = false;
+  function secretUnlocked() {
+    try {
+      return localStorage.getItem(SECRET_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   const COLS = 22;
@@ -4102,8 +4212,19 @@ function initGame() {
   let workshopTimer = 0;
   let leverOn = false;
   let teleports = [null, null];
-  let hasKey = false;
+  let hasKey = 0;
   let hasKeyLevel = false;
+  let keysTotal = 0;
+  let lichens = 0;
+  let lichensRequired = 0;
+  let cannonPos = null;
+  let cannonShots = 0;
+  let shot = null;
+  let king = null;
+  let bridgeBuilt = false;
+  let bridgeSet = /* @__PURE__ */ new Set();
+  let captivePos = null;
+  let santaFreed = false;
   let hintCooldown = 0;
   let hasPlank = false;
   let hasPlankLevel = false;
@@ -4143,9 +4264,18 @@ function initGame() {
       speedX: Math.random() * 14 - 7
     });
   }
+  let levelStartScore = 0;
+  let levelStartLives = 3;
+  function restartLevelState() {
+    score = levelStartScore;
+    lives = levelStartLives;
+  }
   function loadLevel(idx, playMusic = true) {
     var _a, _b;
     const lvl = LEVELS[idx];
+    levelStartScore = score;
+    levelStartLives = lives;
+    document.body.classList.toggle("secret-level", !!lvl.secret);
     currentLevelIdx = idx;
     giftsRequired = lvl.required;
     giftsCollected = 0;
@@ -4178,8 +4308,19 @@ function initGame() {
     doughSealedAnnounced = false;
     leverOn = false;
     teleports = [null, null];
-    hasKey = false;
+    hasKey = 0;
     hasKeyLevel = false;
+    keysTotal = 0;
+    lichens = 0;
+    lichensRequired = lvl.lichens || 0;
+    cannonPos = null;
+    cannonShots = lvl.cannonShots || 0;
+    shot = null;
+    king = lvl.king ? { x: lvl.king.x0, y: lvl.king.y, dir: 1, t: 0, alive: true, fall: false, vy: 0, fy: lvl.king.y } : null;
+    bridgeBuilt = false;
+    bridgeSet = new Set((lvl.bridge || []).map(([x, y]) => y * COLS + x));
+    captivePos = null;
+    santaFreed = false;
     hintCooldown = 0;
     hasPlank = false;
     hasPlankLevel = false;
@@ -4254,6 +4395,18 @@ function initGame() {
           case "K":
             grid[y][x] = TILE.KEY;
             hasKeyLevel = true;
+            keysTotal++;
+            break;
+          case "H":
+            grid[y][x] = TILE.LICHEN;
+            break;
+          case "N":
+            grid[y][x] = TILE.CANNON;
+            cannonPos = { x, y };
+            break;
+          case "C":
+            grid[y][x] = TILE.CAPTIVE;
+            captivePos = { x, y };
             break;
           case "B":
             grid[y][x] = TILE.BALL;
@@ -4303,7 +4456,7 @@ function initGame() {
           const [x, y] = st.pop();
           const k = y * COLS + x;
           const t = (_b = grid[y]) == null ? void 0 : _b[x];
-          if (home.has(k) || !(t === TILE.EMPTY || t === TILE.ENEMY || t === TILE.LID_ITEM)) continue;
+          if (home.has(k) || !(t === TILE.EMPTY || t === TILE.ENEMY || t === TILE.LID_ITEM || t === TILE.KEY)) continue;
           home.add(k);
           for (const d of DIRS4) st.push([x + d.dx, y + d.dy]);
         }
@@ -4316,14 +4469,25 @@ function initGame() {
     }
   }
   function updateHUD() {
-    document.getElementById("hud-level").textContent = `${currentLevelIdx + 1}/${LEVELS.length}${devMode ? " 🛠" : ""}`;
-    document.getElementById("hud-gifts").textContent = exitOpen ? `${giftsCollected}/${giftsRequired} 🔥` : `${giftsCollected}/${giftsRequired}`;
-    const giftsBox = document.getElementById("hud-gifts-box");
-    if (exitOpen) {
-      giftsBox.classList.add("ready");
+    document.getElementById("hud-level").textContent = (LEVELS[currentLevelIdx].secret ? `⭐${currentLevelIdx + 1}` : `${currentLevelIdx + 1}/${REGULAR_LEVELS}`) + (devMode ? " 🛠" : "");
+    const lichenLevel = lichensRequired > 0;
+    document.getElementById("hud-gifts-label").textContent = lichenLevel ? L13_TXT.lichenLabel : L13_TXT.giftLabel;
+    if (lichenLevel) {
+      document.getElementById("hud-gifts").textContent = `${lichens}/${lichensRequired}${lichens >= lichensRequired ? " 💪" : ""}`;
+      document.getElementById("hud-gifts-box").classList.toggle("ready", lichens >= lichensRequired);
     } else {
-      giftsBox.classList.remove("ready");
+      document.getElementById("hud-gifts").textContent = exitOpen ? `${giftsCollected}/${giftsRequired} 🔥` : `${giftsCollected}/${giftsRequired}`;
+      const giftsBox = document.getElementById("hud-gifts-box");
+      if (exitOpen) {
+        giftsBox.classList.add("ready");
+      } else {
+        giftsBox.classList.remove("ready");
+      }
     }
+    const cannonBox = document.getElementById("hud-cannon-box");
+    cannonBox.classList.toggle("hidden-item", !cannonPos);
+    cannonBox.classList.toggle("ready", !!cannonPos && cannonShots > 0 && lichens >= lichensRequired);
+    document.getElementById("hud-cannon").textContent = king && !king.alive ? "👑💥" : `${cannonShots}`;
     document.getElementById("hud-time").textContent = Math.max(0, Math.ceil(timeLeft));
     const plankBox = document.getElementById("hud-plank-box");
     plankBox.classList.toggle("hidden-item", !hasPlankLevel);
@@ -4337,6 +4501,7 @@ function initGame() {
     keyBox.classList.toggle("hidden-item", !hasKeyLevel);
     keyBox.classList.toggle("ready", hasKey);
     document.getElementById("hud-key").textContent = hasKey ? "GOT IT" : "–";
+    if (keysTotal > 1) document.getElementById("hud-key").textContent = hasKey ? L13_TXT.keys(hasKey) : "–";
     const wsBox = document.getElementById("hud-workshop-box");
     wsBox.classList.toggle("hidden-item", workshopState === "none");
     wsBox.classList.toggle("ready", workshopState === "active");
@@ -4514,7 +4679,7 @@ function initGame() {
     audio.playDie();
     spawnParticles(player.x, player.y, "#ef476f", 24);
     spawnParticles(player.x, player.y, "#ffffff", 16);
-    if (!devMode) lives--;
+    if (!devMode) lives = levelStartLives - 1;
     shake(0.3, 4);
     updateHUD();
     stateMessage = reason;
@@ -4545,7 +4710,10 @@ function initGame() {
     TILE.AIR,
     TILE.STAR,
     TILE.LID_ITEM,
-    TILE.LID
+    TILE.LID,
+    TILE.CAPTIVE,
+    TILE.CANNON,
+    TILE.BRIDGE
   ]);
   function explodeEnemy(ex, ey) {
     audio.playExplosion();
@@ -4891,6 +5059,7 @@ function initGame() {
     var _a, _b;
     player.dirX = dx;
     player.dirY = dy;
+    if (dx) player.faceX = dx;
     player.walkFrame = (player.walkFrame + 1) % 2;
     const nx = player.x + dx;
     const ny = player.y + dy;
@@ -4914,10 +5083,50 @@ function initGame() {
       }
       return;
     }
-    if (target === TILE.EMPTY) {
+    if (target === TILE.EMPTY || target === TILE.BRIDGE) {
       moveSantaTo(nx, ny);
       audio.playStep();
       pushCounter = 0;
+    } else if (target === TILE.LICHEN) {
+      moveSantaTo(nx, ny);
+      lichens++;
+      score += 100;
+      spawnParticles(nx, ny, "#a7c957", 12);
+      audio.playGift();
+      if (lichens === lichensRequired) {
+        spawnFloatingText(nx, ny, L13_TXT.strong);
+        audio.playExitOpen();
+        hudFlashTimer = 1.4;
+      }
+      updateHUD();
+      pushCounter = 0;
+    } else if (target === TILE.CANNON) {
+      pushCounter = 0;
+      if (lichens < lichensRequired) {
+        if (hintCooldown <= 0) {
+          hintCooldown = 2.2;
+          audio.playLocked();
+          spawnFloatingText(nx, ny, L13_TXT.weak(lichens, lichensRequired));
+        }
+      } else if (!king || !king.alive) {
+      } else if (cannonShots <= 0) {
+        if (hintCooldown <= 0) {
+          hintCooldown = 2.2;
+          audio.playLocked();
+          spawnFloatingText(nx, ny, L13_TXT.noBalls);
+        }
+      } else if (!shot) {
+        cannonShots--;
+        shot = { x: nx, y: ny - 1, fy: ny - 0.5, t: 0 };
+        audio.playExplosion();
+        shake(0.15, 3);
+        spawnParticles(nx, ny - 1, "#ffffff", 16);
+        spawnFloatingText(nx, ny, L13_TXT.fire);
+        updateHUD();
+      }
+    } else if (target === TILE.CAPTIVE) {
+      pushCounter = 0;
+      freeSanta(nx, ny);
     } else if (target === TILE.SNOW) {
       moveSantaTo(nx, ny);
       spawnParticles(nx, ny, "#e0fbfc", 8);
@@ -5034,6 +5243,28 @@ function initGame() {
         hintCooldown = 2.2;
         spawnFloatingText(nx, ny, "STAND ON THE LOG AND PRESS DOWN");
       }
+    } else if (target === TILE.LEVER && LEVELS[currentLevelIdx].bridge) {
+      pushCounter = 0;
+      if (lichens < lichensRequired) {
+        if (hintCooldown <= 0) {
+          hintCooldown = 2.2;
+          audio.playLocked();
+          spawnFloatingText(nx, ny, L13_TXT.weak(lichens, lichensRequired));
+        }
+      } else if (!leverOn) {
+        leverOn = true;
+        bridgeBuilt = true;
+        score += 150;
+        audio.playLever();
+        audio.playPlank();
+        shake(0.25, 4);
+        for (const [bx, by] of LEVELS[currentLevelIdx].bridge) {
+          if (grid[by][bx] === TILE.AIR) grid[by][bx] = TILE.BRIDGE;
+          spawnParticles(bx, by, "#ddb892", 14);
+        }
+        spawnFloatingText(nx, ny, L13_TXT.bridge);
+        updateHUD();
+      }
     } else if (target === TILE.LEVER) {
       pushCounter = 0;
       if (!leverOn) {
@@ -5052,7 +5283,7 @@ function initGame() {
       useTeleport(nx, ny, dx, dy);
     } else if (target === TILE.KEY) {
       moveSantaTo(nx, ny);
-      hasKey = true;
+      hasKey++;
       score += 200;
       audio.playKey();
       spawnParticles(nx, ny, "#ffd166", 16);
@@ -5062,7 +5293,7 @@ function initGame() {
       pushCounter = 0;
       if (hasKey) {
         grid[ny][nx] = TILE.EMPTY;
-        hasKey = false;
+        hasKey--;
         score += 200;
         audio.playGateOpen();
         shake(0.25, 3);
@@ -5078,27 +5309,113 @@ function initGame() {
     } else if (target === TILE.EXIT) {
       if (exitOpen && sleighPulled) {
         moveSantaTo(nx, ny);
-        const timeBonus = Math.ceil(timeLeft) * 10;
-        score += timeBonus;
-        updateHUD();
-        audio.stopMusic();
-        audio.playWin();
-        const ratio = timeLeft / LEVELS[currentLevelIdx].time;
-        const stars = ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
-        totalStars += stars;
-        starsPossible += 3;
-        for (let i = 0; i < stars; i++) audio.playStar(i);
-        stateMessage = `Level complete!  ${"★".repeat(stars)}${"☆".repeat(3 - stars)}
-Time bonus: +${timeBonus} pts`;
-        stateBannerTimer = 2.6;
-        state = "LEVEL_CLEAR";
+        completeLevel();
       }
     } else if (target === TILE.ENEMY) {
       triggerPlayerDeath("You ran into a naughty elf!");
     }
   }
+  function completeLevel() {
+    const timeBonus = Math.ceil(timeLeft) * 10;
+    score += timeBonus;
+    updateHUD();
+    audio.stopMusic();
+    audio.playWin();
+    const ratio = timeLeft / LEVELS[currentLevelIdx].time;
+    const stars = ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
+    totalStars += stars;
+    starsPossible += 3;
+    for (let i = 0; i < stars; i++) audio.playStar(i);
+    stateMessage = `Level complete!  ${"★".repeat(stars)}${"☆".repeat(3 - stars)}
+Time bonus: +${timeBonus} pts`;
+    stateBannerTimer = 2.6;
+    state = "LEVEL_CLEAR";
+  }
+  function freeSanta(cx, cy) {
+    if (santaFreed) return;
+    santaFreed = true;
+    grid[cy][cx] = TILE.EMPTY;
+    moveSantaTo(cx, cy);
+    score += 3e3;
+    audio.playGateOpen();
+    spawnParticles(cx, cy, "#ffd166", 24);
+    spawnParticles(cx, cy, "#ef233c", 16);
+    spawnFloatingText(cx, cy, L13_TXT.freed);
+    if (king && king.alive) {
+      king.alive = false;
+      king.fall = true;
+    }
+    dismissElves();
+    updateHUD();
+    completeLevel();
+  }
+  function dismissElves() {
+    var _a;
+    for (const e of enemies) {
+      if (((_a = grid[e.y]) == null ? void 0 : _a[e.x]) === TILE.ENEMY) grid[e.y][e.x] = TILE.EMPTY;
+      spawnParticles(e.x, e.y, "#c77dff", 18);
+      spawnParticles(e.x, e.y, "#ffffff", 8);
+    }
+    enemies = [];
+  }
+  function hitKing() {
+    king.alive = false;
+    king.fall = true;
+    score += 2e3;
+    hudFlashTimer = 1.4;
+    audio.playExplosion();
+    audio.playStarCollect();
+    shake(0.5, 8);
+    spawnParticles(king.x, king.y, "#c77dff", 30);
+    spawnParticles(king.x, king.y, "#ffd166", 20);
+    spawnParticles(king.x, king.y, "#ffffff", 16);
+    spawnFloatingText(king.x, king.y + 1, L13_TXT.kingHit);
+    if (enemies.length) setTimeout(() => {
+      if (!king || king.alive) return;
+      spawnFloatingText(9, 6, L13_TXT.elvesGone);
+    }, 700);
+    dismissElves();
+    updateHUD();
+  }
+  function updateSecret(dt) {
+    var _a;
+    if (king) {
+      if (king.alive) {
+        king.t += dt;
+        const step = LEVELS[currentLevelIdx].king.step;
+        if (king.t >= step) {
+          king.t -= step;
+          const k = LEVELS[currentLevelIdx].king;
+          if (king.x + king.dir > k.x1 || king.x + king.dir < k.x0) king.dir = -king.dir;
+          king.x += king.dir;
+        }
+      } else if (king.fall) {
+        king.vy += 30 * dt;
+        king.fy += king.vy * dt;
+        if (king.fy > ROWS + 1) king.fall = false;
+      }
+    }
+    if (shot) {
+      shot.t += dt;
+      shot.fy -= 16 * dt;
+      const cy = Math.round(shot.fy);
+      if (cy !== shot.y) {
+        shot.y = cy;
+        const t = (_a = grid[cy]) == null ? void 0 : _a[shot.x];
+        if (king && king.alive && king.x === shot.x && cy <= king.y) {
+          hitKing();
+          shot = null;
+        } else if (t === void 0 || t !== TILE.AIR && t !== TILE.EMPTY) {
+          spawnParticles(shot.x, cy + 1, "#ffffff", 14);
+          spawnFloatingText(shot.x, cy + 2, L13_TXT.miss);
+          audio.playThud();
+          shot = null;
+        }
+      }
+    }
+  }
   function moveSantaTo(nx, ny) {
-    grid[player.y][player.x] = TILE.EMPTY;
+    grid[player.y][player.x] = bridgeSet.has(player.y * COLS + player.x) && bridgeBuilt ? TILE.BRIDGE : TILE.EMPTY;
     player.x = nx;
     player.y = ny;
     grid[ny][nx] = TILE.SANTA;
@@ -5431,6 +5748,118 @@ Time bonus: +${timeBonus} pts`;
   }
   const ON_PLANK_OFFSET = 34;
   const isPlank = (t) => t === TILE.PLANK_L || t === TILE.PLANK_C || t === TILE.PLANK_R;
+  function drawReindeerSprite(px, py, timeSec, gx) {
+    const s = TILE_SIZE;
+    const bob = Math.sin(timeSec * 4 + gx) * 1;
+    const by = py + bob;
+    ctx.fillStyle = "#e6ccb2";
+    ctx.fillRect(px + 13, by + 3, 3, 9);
+    ctx.fillRect(px + 10, by + 5, 4, 3);
+    ctx.fillRect(px + 25, by + 3, 3, 9);
+    ctx.fillRect(px + 27, by + 5, 4, 3);
+    ctx.fillStyle = "#8d5524";
+    ctx.fillRect(px + 13, by + 11, 16, 11);
+    ctx.fillStyle = "#a47148";
+    ctx.fillRect(px + 23, by + 14, 10, 8);
+    ctx.fillStyle = "#111827";
+    ctx.fillRect(px + 19, by + 13, 3, 3);
+    const nosePulse = Math.floor(timeSec * 4) % 2 === 0;
+    ctx.fillStyle = nosePulse ? "#ff4d6d" : "#d90429";
+    ctx.fillRect(px + 31, by + 15, 5, 5);
+    ctx.fillStyle = "#8d5524";
+    ctx.fillRect(px + 8, by + 21, 22, 12);
+    ctx.fillStyle = "#ef233c";
+    ctx.fillRect(px + 16, by + 20, 8, 4);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(px + 20, by + 23, 4, 4);
+    ctx.fillStyle = "#6f4518";
+    ctx.fillRect(px + 10, by + 33, 4, 7);
+    ctx.fillRect(px + 16, by + 33, 4, 7);
+    ctx.fillRect(px + 23, by + 33, 4, 7);
+    ctx.fillStyle = "#1f2937";
+    ctx.fillRect(px + 10, by + 38, 4, 3);
+    ctx.fillRect(px + 16, by + 38, 4, 3);
+    ctx.fillRect(px + 23, by + 38, 4, 3);
+  }
+  function drawCastleSilhouette(timeSec) {
+    const T = TILE_SIZE;
+    ctx.fillStyle = "#1c1240";
+    ctx.fillRect(12 * T, 1.4 * T, 9 * T, 1.6 * T);
+    for (let x = 12; x < 21; x++) ctx.fillRect(x * T + 6, 1.1 * T, T * 0.45, 0.35 * T);
+    const towers = [[12.2, 0.35, 1.3], [15.6, 0.15, 1.6], [19.3, 0.4, 1.3]];
+    for (const [tx, ty, w] of towers) {
+      ctx.fillStyle = "#1c1240";
+      ctx.fillRect(tx * T, (ty + 0.5) * T, w * T, (3 - ty - 0.5) * T);
+      ctx.beginPath();
+      ctx.moveTo(tx * T - 4, (ty + 0.55) * T);
+      ctx.lineTo((tx + w / 2) * T, (ty - 0.35) * T);
+      ctx.lineTo((tx + w) * T + 4, (ty + 0.55) * T);
+      ctx.fill();
+      const lit = Math.floor(timeSec * 0.7 + tx) % 3 !== 0;
+      ctx.fillStyle = lit ? "#ffb703" : "#6c4a0a";
+      ctx.fillRect((tx + w / 2) * T - 4, (ty + 1) * T, 8, 11);
+    }
+    ctx.fillStyle = "#151c4a";
+    ctx.beginPath();
+    ctx.moveTo(1 * T, 3 * T);
+    ctx.quadraticCurveTo(3 * T, 1.6 * T, 6 * T, 2.6 * T);
+    ctx.lineTo(6 * T, 3 * T);
+    ctx.fill();
+    ctx.fillStyle = "#fdf0d5";
+    ctx.beginPath();
+    ctx.arc(3.2 * T, 0.95 * T, 0.42 * T, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#0b1033";
+    ctx.beginPath();
+    ctx.arc(3.4 * T, 0.85 * T, 0.36 * T, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  function drawKing(timeSec) {
+    if (!king || !king.alive && !king.fall) return;
+    const T = TILE_SIZE;
+    const px = king.x * T;
+    const py = (king.alive ? king.y : king.fy) * T + Math.sin(timeSec * 3) * 2;
+    ctx.fillStyle = "#90e0ef";
+    ctx.fillRect(px + 2, py + 36, T - 4, 6);
+    ctx.fillStyle = "#4cc9f0";
+    ctx.fillRect(px + 6, py + 41, T - 12, 3);
+    ctx.fillStyle = "#7209b7";
+    ctx.fillRect(px + 10, py + 18, 24, 18);
+    ctx.fillStyle = "#560bad";
+    ctx.fillRect(px + 10, py + 30, 24, 6);
+    ctx.fillStyle = "#ffccd5";
+    ctx.fillRect(px + 14, py + 8, 16, 11);
+    ctx.fillRect(px + 10, py + 9, 4, 4);
+    ctx.fillRect(px + 30, py + 9, 4, 4);
+    ctx.fillStyle = "#111";
+    ctx.fillRect(px + 17, py + 11, 3, 3);
+    ctx.fillRect(px + 24, py + 11, 3, 3);
+    ctx.fillStyle = "#9d0208";
+    ctx.fillRect(px + 18, py + 16, 8, 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(px + 13, py + 4, 18, 5);
+    ctx.fillRect(px + 13, py + 1, 3, 4);
+    ctx.fillRect(px + 20, py, 4, 5);
+    ctx.fillRect(px + 28, py + 1, 3, 4);
+    ctx.fillStyle = "#ef233c";
+    ctx.fillRect(px + 21, py + 5, 2, 2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(px + 36, py + 10, 2, 24);
+    ctx.fillStyle = Math.floor(timeSec * 4) % 2 ? "#c77dff" : "#ffffff";
+    ctx.fillRect(px + 34, py + 6, 6, 6);
+  }
+  function drawShot() {
+    if (!shot) return;
+    const T = TILE_SIZE;
+    const cx = shot.x * T + T / 2;
+    const cy = shot.fy * T + T / 2;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(cx - 7, cy - 7, 14, 14);
+    ctx.fillStyle = "#bde0fe";
+    ctx.fillRect(cx - 3, cy + 2, 6, 4);
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillRect(cx - 4, cy + 8, 8, 10);
+  }
   function drawTile(type, gx, gy, timeSec, extraY = 0) {
     var _a;
     const px = gx * TILE_SIZE;
@@ -5575,36 +6004,115 @@ Time bonus: +${timeBonus} pts`;
         ctx.fillRect(px + 10, py + 28 + bob, 3, 3);
       }
     } else if (type === TILE.REINDEER) {
-      const bob = Math.sin(timeSec * 4 + gx) * 1;
-      const by = py + bob;
-      ctx.fillStyle = "#e6ccb2";
-      ctx.fillRect(px + 13, by + 3, 3, 9);
-      ctx.fillRect(px + 10, by + 5, 4, 3);
-      ctx.fillRect(px + 25, by + 3, 3, 9);
-      ctx.fillRect(px + 27, by + 5, 4, 3);
-      ctx.fillStyle = "#8d5524";
-      ctx.fillRect(px + 13, by + 11, 16, 11);
-      ctx.fillStyle = "#a47148";
-      ctx.fillRect(px + 23, by + 14, 10, 8);
-      ctx.fillStyle = "#111827";
-      ctx.fillRect(px + 19, by + 13, 3, 3);
-      const nosePulse = Math.floor(timeSec * 4) % 2 === 0;
-      ctx.fillStyle = nosePulse ? "#ff4d6d" : "#d90429";
-      ctx.fillRect(px + 31, by + 15, 5, 5);
-      ctx.fillStyle = "#8d5524";
-      ctx.fillRect(px + 8, by + 21, 22, 12);
-      ctx.fillStyle = "#ef233c";
-      ctx.fillRect(px + 16, by + 20, 8, 4);
-      ctx.fillStyle = "#ffd166";
-      ctx.fillRect(px + 20, by + 23, 4, 4);
+      drawReindeerSprite(px, py, timeSec, gx);
+    } else if (type === TILE.LICHEN) {
+      ctx.fillStyle = "#5c677d";
+      ctx.fillRect(px + 8, py + 28, 28, 10);
+      ctx.fillStyle = "#7d8597";
+      ctx.fillRect(px + 10, py + 28, 24, 3);
+      const sway = Math.sin(timeSec * 2 + gx * 1.3) * 1.5;
+      ctx.fillStyle = "#6a994e";
+      ctx.fillRect(px + 9 + sway, py + 18, 8, 11);
+      ctx.fillRect(px + 25 + sway, py + 16, 9, 13);
+      ctx.fillStyle = "#a7c957";
+      ctx.fillRect(px + 15 + sway, py + 12, 10, 17);
+      ctx.fillRect(px + 11 + sway, py + 16, 4, 4);
+      ctx.fillRect(px + 28 + sway, py + 13, 4, 4);
+      ctx.fillStyle = "#dde5b6";
+      ctx.fillRect(px + 18 + sway, py + 13, 3, 3);
+      ctx.fillRect(px + 12 + sway, py + 20, 2, 2);
+      ctx.fillRect(px + 29 + sway, py + 18, 2, 2);
+    } else if (type === TILE.CANNON) {
       ctx.fillStyle = "#6f4518";
-      ctx.fillRect(px + 10, by + 33, 4, 7);
-      ctx.fillRect(px + 16, by + 33, 4, 7);
-      ctx.fillRect(px + 23, by + 33, 4, 7);
-      ctx.fillStyle = "#1f2937";
-      ctx.fillRect(px + 10, by + 38, 4, 3);
-      ctx.fillRect(px + 16, by + 38, 4, 3);
-      ctx.fillRect(px + 23, by + 38, 4, 3);
+      ctx.fillRect(px + 6, py + 32, s - 12, 9);
+      ctx.fillStyle = "#3e2410";
+      ctx.fillRect(px + 9, py + 36, 7, 7);
+      ctx.fillRect(px + s - 16, py + 36, 7, 7);
+      ctx.fillStyle = "#495057";
+      ctx.fillRect(px + 14, py + 6, 16, 28);
+      ctx.fillStyle = "#adb5bd";
+      ctx.fillRect(px + 16, py + 8, 4, 24);
+      ctx.fillStyle = "#212529";
+      ctx.fillRect(px + 12, py + 3, 20, 6);
+      ctx.fillStyle = "#f8f9fa";
+      ctx.fillRect(px + 16, py + 4, 12, 3);
+      for (let i = 0; i < cannonShots; i++) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(px + 4 + i * 6, py + 26, 4, 4);
+      }
+    } else if (type === TILE.BRIDGE) {
+      ctx.fillStyle = "#04070f";
+      ctx.fillRect(px, py, s, s);
+      ctx.fillStyle = "#7f5539";
+      ctx.fillRect(px, py + s - 14, s, 10);
+      ctx.fillStyle = "#5a3412";
+      for (let x = 0; x < s; x += 11) ctx.fillRect(px + x, py + s - 14, 2, 10);
+      ctx.fillStyle = "#adb5bd";
+      ctx.fillRect(px, py + s - 26, s, 2);
+      ctx.fillRect(px + 4, py + s - 26, 2, 12);
+      ctx.fillRect(px + s - 6, py + s - 26, 2, 12);
+    } else if (type === TILE.CAPTIVE) {
+      const wave = Math.floor(timeSec * 3) % 2;
+      ctx.fillStyle = "#d90429";
+      ctx.fillRect(px + 11, py + 6, s - 22, 8);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(px + 9, py + 12, s - 18, 4);
+      ctx.fillStyle = "#ffccd5";
+      ctx.fillRect(px + 12, py + 16, s - 24, 7);
+      ctx.fillStyle = "#111";
+      ctx.fillRect(px + 15, py + 17, 3, 3);
+      ctx.fillRect(px + 26, py + 17, 3, 3);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(px + 10, py + 21, s - 20, 7);
+      ctx.fillStyle = "#ef233c";
+      ctx.fillRect(px + 9, py + 27, s - 18, 12);
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(px + 9, py + 32, s - 18, 3);
+      ctx.fillStyle = "#ffccd5";
+      ctx.fillRect(px + (wave ? 3 : 5), py + (wave ? 12 : 18), 5, 5);
+      ctx.fillStyle = "#ffd166";
+      ctx.font = PIXEL_FONT(12);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      if (wave) ctx.fillText("!", px + s - 6, py + 6);
+    } else if (type === TILE.SANTA && LEVELS[currentLevelIdx].reindeerHero) {
+      if ((player.faceX || 1) < 0) {
+        ctx.save();
+        ctx.translate(2 * px + s, 0);
+        ctx.scale(-1, 1);
+        drawReindeerSprite(px, py, timeSec, gx);
+        ctx.restore();
+      } else {
+        drawReindeerSprite(px, py, timeSec, gx);
+      }
+      if (santaFreed) {
+        const fx = (player.faceX || 1) < 0 ? px + 12 : px + 8;
+        ctx.fillStyle = "#d90429";
+        ctx.fillRect(fx + 4, py - 6, 12, 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(fx + 2, py - 1, 16, 3);
+        ctx.fillStyle = "#ffccd5";
+        ctx.fillRect(fx + 5, py + 2, 10, 5);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(fx + 4, py + 6, 12, 5);
+        ctx.fillStyle = "#ef233c";
+        ctx.fillRect(fx + 3, py + 10, 14, 11);
+        ctx.fillStyle = "#111827";
+        ctx.fillRect(fx + 3, py + 15, 14, 2);
+      }
+      if (lichens >= lichensRequired) {
+        ctx.fillStyle = "rgba(167, 201, 87, 0.35)";
+        ctx.fillRect(px + 6, py + 40, s - 12, 3);
+      }
+    } else if (type === TILE.AIR && LEVELS[currentLevelIdx].chasmCols && !LEVELS[currentLevelIdx].chasmCols.includes(gx)) {
+      ctx.fillStyle = gy <= 2 ? "#0b1033" : "#101845";
+      ctx.fillRect(px, py, s, s);
+      const tw = (gx * 7 + gy * 13) % 5;
+      if (tw < 2) {
+        const on = Math.floor(timeSec * 1.5 + gx + gy * 3) % 4 !== 0;
+        ctx.fillStyle = on ? "#fdf0d5" : "#5c6b9c";
+        ctx.fillRect(px + 8 + gx * 11 % 26, py + 6 + gy * 17 % 28, 2, 2);
+      }
     } else if (type === TILE.SLEIGH) {
       ctx.fillStyle = "#ffd166";
       ctx.fillRect(px + 5, py + 34, s - 10, 3);
@@ -6003,6 +6511,11 @@ Time bonus: +${timeBonus} pts`;
         }
       }
     }
+    if (LEVELS[currentLevelIdx].reindeerHero) {
+      drawCastleSilhouette(timeSec);
+      drawKing(timeSec);
+      drawShot();
+    }
     const mark = LEVELS[currentLevelIdx].mark;
     if (mark && ((_a = grid[mark[1]]) == null ? void 0 : _a[mark[0]]) === TILE.EMPTY) {
       const mx = mark[0] * TILE_SIZE;
@@ -6063,10 +6576,10 @@ Time bonus: +${timeBonus} pts`;
       if (f.x > worldW) f.x = 0;
       ctx.fillRect(f.x, f.y, f.r, f.r);
     }
-    if (state === "DYING" || state === "LEVEL_CLEAR") {
+    if (state === "DYING" || state === "LEVEL_CLEAR" || state === "TEASER") {
       ctx.fillStyle = "rgba(7, 13, 31, 0.88)";
       ctx.fillRect(worldW * 0.1, worldH * 0.38, worldW * 0.8, worldH * 0.24);
-      ctx.strokeStyle = state === "LEVEL_CLEAR" ? "#06d6a0" : "#ef476f";
+      ctx.strokeStyle = state === "LEVEL_CLEAR" ? "#06d6a0" : state === "TEASER" ? "#c77dff" : "#ef476f";
       ctx.lineWidth = 4;
       ctx.strokeRect(worldW * 0.1, worldH * 0.38, worldW * 0.8, worldH * 0.24);
       ctx.fillStyle = "#ffffff";
@@ -6093,7 +6606,7 @@ Time bonus: +${timeBonus} pts`;
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#4cc9f0";
       ctx.font = PIXEL_FONT(26);
-      ctx.fillText(`LEVEL ${currentLevelIdx + 1} / ${LEVELS.length}`, worldW / 2, worldH * 0.37);
+      ctx.fillText(lvl.secret ? L13_TXT.secretLevel : L13_TXT.levelOf(currentLevelIdx + 1, REGULAR_LEVELS), worldW / 2, worldH * 0.37);
       ctx.font = TITLE_FONT(22);
       ctx.fillStyle = "#b5173e";
       const title = lvl.name.replace(/^\d+\.\s*/, "").toUpperCase();
@@ -6124,7 +6637,7 @@ Time bonus: +${timeBonus} pts`;
   }
   function gameLoop(timestamp) {
     var _a, _b;
-    const inGame = state === "PLAYING" || state === "INTRO" || state === "DYING" || state === "LEVEL_CLEAR" || state === "FLYING";
+    const inGame = state === "PLAYING" || state === "INTRO" || state === "DYING" || state === "LEVEL_CLEAR" || state === "FLYING" || state === "TEASER";
     document.body.classList.toggle("in-game", inGame);
     if (!inGame && touchDir) releaseTouchDir();
     pollGamepad();
@@ -6207,13 +6720,15 @@ Time bonus: +${timeBonus} pts`;
         }
       }
       moveTimer += dt * 1e3;
-      if (moveTimer >= MOVE_INTERVAL) {
+      const moveInterval = lichensRequired > 0 ? MOVE_INTERVAL + (290 - MOVE_INTERVAL) * Math.max(0, 1 - lichens / lichensRequired) : MOVE_INTERVAL;
+      if (moveTimer >= moveInterval) {
         const dir = getDesiredDirection();
         if (dir) {
           tryMoveSanta(dir.dx, dir.dy);
           moveTimer = 0;
         }
       }
+      if (lichensRequired > 0) updateSecret(dt);
       physicsTimer += dt * 1e3;
       if (physicsTimer >= PHYSICS_INTERVAL) {
         physicsTimer -= PHYSICS_INTERVAL;
@@ -6235,6 +6750,7 @@ Time bonus: +${timeBonus} pts`;
       stateBannerTimer -= dt;
       if (stateBannerTimer <= 0) {
         if (lives > 0) {
+          score = levelStartScore;
           loadLevel(currentLevelIdx, false);
           state = "PLAYING";
           audio.startMusic(false);
@@ -6242,14 +6758,40 @@ Time bonus: +${timeBonus} pts`;
           showEndScreen("GAME OVER", "Santa got snowed under.");
         }
       }
+    } else if (state === "TEASER") {
+      stateBannerTimer -= dt;
+      if (stateBannerTimer <= 0) startCredits(false);
     } else if (state === "LEVEL_CLEAR") {
       stateBannerTimer -= dt;
+      if (lichensRequired > 0) updateSecret(dt);
       if (stateBannerTimer <= 0) {
-        if (currentLevelIdx + 1 < LEVELS.length) {
+        if (practiceSecret) {
+          showEndScreen(L13_TXT.practiceTitle, L13_TXT.practiceWin);
+        } else if (currentLevelIdx + 1 < REGULAR_LEVELS) {
           loadLevel(currentLevelIdx + 1, true);
           beginIntro();
           audio.startMusic(false);
+        } else if (currentLevelIdx + 1 === REGULAR_LEVELS && score >= SECRET_SCORE) {
+          if (!devMode) {
+            try {
+              localStorage.setItem(SECRET_KEY, "1");
+            } catch (e) {
+            }
+          }
+          document.getElementById("btn-secret").classList.remove("hidden-secret");
+          loadLevel(SECRET_LEVEL_IDX, true);
+          spawnFloatingText(10, 6, L13_TXT.unlocked);
+          beginIntro();
+          audio.playStarCollect();
+          audio.startMusic(false);
+        } else if (currentLevelIdx + 1 === REGULAR_LEVELS) {
+          stateMessage = `${L13_TXT.teaserLine}
+${L13_TXT.teaserScore(score)}`;
+          stateBannerTimer = 4.5;
+          state = "TEASER";
+          audio.playLocked();
         } else {
+          if (LEVELS[currentLevelIdx].secret) masterEarned = true;
           startCredits(false);
         }
       }
@@ -6298,7 +6840,11 @@ Time bonus: +${timeBonus} pts`;
       document.getElementById("screen-start").classList.remove("hidden");
     } else {
       gameWon = true;
-      showEndScreen("🎄 CHRISTMAS IS SAVED! 🎄", "Congratulations! You completed every level!");
+      if (masterEarned) {
+        showEndScreen(L13_TXT.masterTitle, L13_TXT.masterMsg);
+      } else {
+        showEndScreen("🎄 CHRISTMAS IS SAVED! 🎄", "Congratulations! You completed every level!");
+      }
     }
   }
   const HS_KEY = "santaDash.highscores.v1";
@@ -6353,12 +6899,13 @@ Time bonus: +${timeBonus} pts`;
       const color = HS_COLORS[i];
       if (e) {
         const lvl = e.won ? `${e.level} ✓` : `${e.level}`;
-        html += `<tr class="${i === highlightIdx ? "hs-new" : ""}" style="color:${color}"><td>${i + 1}.</td><td>${e.name}</td><td class="num">${e.score}</td><td class="num">${lvl}</td><td class="num">${e.stars}</td></tr>`;
+        html += `<tr class="${i === highlightIdx ? "hs-new" : ""}" style="color:${color}"><td>${i + 1}.</td><td>${e.master ? "👑 " : ""}${e.name}</td><td class="num">${e.score}</td><td class="num">${lvl}</td><td class="num">${e.stars}</td></tr>`;
       } else {
         html += `<tr class="hs-empty"><td>${i + 1}.</td><td>· · · · · · · ·</td><td class="num">0</td><td class="num">–</td><td class="num">–</td></tr>`;
       }
     }
     html += "</table>";
+    if (list.some((e) => e && e.master)) html += `<p class="hs-note">${L13_TXT.masterNote}</p>`;
     if (devMode) html += '<p class="hs-note">🛠 Test mode – scores are not saved.</p>';
     container.innerHTML = html;
   }
@@ -6366,6 +6913,11 @@ Time bonus: +${timeBonus} pts`;
   let playerName = "";
   function showEndScreen(title, msg) {
     audio.stopMusic();
+    if (practiceSecret) {
+      if (msg !== L13_TXT.practiceWin) msg = msg + "\n" + L13_TXT.practiceLose;
+      showEndScreenFinal(title, msg, -1);
+      return;
+    }
     if (qualifies(score)) {
       pendingEnd = { title, msg };
       if (playerName) {
@@ -6408,6 +6960,7 @@ Time bonus: +${timeBonus} pts`;
       score,
       level: currentLevelIdx + 1,
       won: gameWon,
+      master: masterEarned,
       stars: totalStars,
       date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
     };
@@ -6435,8 +6988,11 @@ Time bonus: +${timeBonus} pts`;
     state = "INTRO";
     introTimer = 2.8;
   }
-  function startNewGame(lvlIdx) {
+  function startNewGame(lvlIdx, practice = false) {
+    practiceSecret = practice;
+    masterEarned = false;
     if (!devMode) lvlIdx = 0;
+    if (practice) lvlIdx = SECRET_LEVEL_IDX;
     maybeShowIosSoundTip();
     const startInput = document.getElementById("start-name-input");
     playerName = cleanName(startInput.value).trim();
@@ -6487,14 +7043,18 @@ Time bonus: +${timeBonus} pts`;
   LEVELS.forEach((lvl, i) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "level-btn" + (i === 0 ? " selected" : "");
+    b.className = "level-btn" + (i === 0 ? " selected" : "") + (lvl.secret ? " locked-secret" : "");
     b.dataset.lvl = String(i);
-    b.textContent = lvl.name;
+    b.textContent = (lvl.secret ? "🔒 " : "") + lvl.name;
     b.title = lvl.name;
     levelButtonsBox.appendChild(b);
   });
   document.querySelectorAll(".level-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (btn.classList.contains("locked-secret")) {
+        showToast(L13_TXT.locked);
+        return;
+      }
       document.querySelectorAll(".level-btn").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
       selectedLevelIdx = parseInt(btn.dataset.lvl, 10);
@@ -6510,6 +7070,8 @@ Time bonus: +${timeBonus} pts`;
     e.target.blur();
   });
   document.getElementById("btn-start").addEventListener("click", () => startNewGame(selectedLevelIdx));
+  document.getElementById("btn-secret").addEventListener("click", () => startNewGame(SECRET_LEVEL_IDX, true));
+  if (secretUnlocked()) document.getElementById("btn-secret").classList.remove("hidden-secret");
   document.getElementById("btn-credits").addEventListener("click", () => {
     audio.init();
     startCredits(true);
@@ -6563,6 +7125,7 @@ Time bonus: +${timeBonus} pts`;
   document.getElementById("btn-restart").addEventListener("click", () => {
     if (state === "PLAYING" || state === "PAUSED") {
       document.getElementById("screen-pause").classList.add("hidden");
+      restartLevelState();
       loadLevel(currentLevelIdx, false);
       state = "PLAYING";
       audio.startMusic(false);
@@ -6603,10 +7166,14 @@ Time bonus: +${timeBonus} pts`;
   LEVELS.forEach((lvl, i) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "level-btn";
-    b.textContent = lvl.name;
+    b.className = "level-btn" + (lvl.secret ? " locked-secret" : "");
+    b.textContent = (lvl.secret ? "🔒 " : "") + lvl.name;
     b.title = lvl.name;
     b.addEventListener("click", () => {
+      if (lvl.secret) {
+        showToast(L13_TXT.locked);
+        return;
+      }
       document.getElementById("screen-pause").classList.add("hidden");
       document.getElementById("screen-start").classList.add("hidden");
       document.getElementById("screen-end").classList.add("hidden");
@@ -6927,6 +7494,7 @@ Time bonus: +${timeBonus} pts`;
     if (e.code === "KeyP") togglePause();
     if (e.code === "KeyR" && (state === "PLAYING" || state === "PAUSED")) {
       document.getElementById("screen-pause").classList.add("hidden");
+      restartLevelState();
       loadLevel(currentLevelIdx, false);
       state = "PLAYING";
       audio.startMusic(false);
@@ -7387,6 +7955,7 @@ if (document.readyState === "complete") {
   window.addEventListener("load", initGame);
 }
 </script>
+  <div id="toast" aria-live="polite"></div>
   <script>
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost") && !/SantaDashTV/i.test(navigator.userAgent)) {
   window.addEventListener("load", function() {
