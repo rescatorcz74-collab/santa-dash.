@@ -1427,7 +1427,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.27</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.28</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -4151,16 +4151,17 @@ function initGame() {
     unlocked: "SECRET LEVEL UNLOCKED! ⭐",
     secretLevel: "SECRET LEVEL",
     levelOf: (i, n) => `LEVEL ${i} / ${n}`,
-    teaser: "They say someone is waiting at the Elf King’s castle… (60,000 points)",
+    teaser: "They say someone is waiting at the Elf King’s castle… (70,000 points)",
     teaserLine: "Someone waits at the Elf King’s castle…",
-    teaserScore: (n) => `You have ${fmtPoints(n)} pts – you need 60,000.`,
-    locked: "🔒 Only 60,000 points in a game unlock the secret level",
+    teaserScore: (n) => `You have ${fmtPoints(n)} pts – you need 70,000.`,
+    locked: "🔒 Only 70,000 points in a game unlock the secret level",
     masterTitle: "🦌 SANTA IS RESCUED! 🎅",
     masterMsg: "The reindeer freed Santa from the Elf King’s castle! You earn the title XMAS MASTER 👑",
     practiceTitle: "⭐ SECRET LEVEL",
     practiceWin: "Santa is rescued! Practice games are not saved to the high scores.",
     practiceLose: "Practice games are not saved to the high scores.",
     masterNote: "👑 = XMAS MASTER",
+    cleanLevel: "✨ CLEAN LEVEL! +1,500 pts",
     finale: "MERRY CHRISTMAS!",
     introLichens: (n, t) => `🌿 ${n} lichens   ⏱ ${t} s`,
     finaleSkip: "tap to continue"
@@ -4176,10 +4177,12 @@ function initGame() {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
   }
+  const CLEAN_BONUS = 1500;
+  let cleanLevels = 0;
   const REGULAR_LEVELS = 12;
   const SECRET_LEVEL_IDX = 12;
-  const SECRET_SCORE = 6e4;
-  const SECRET_KEY = "santaDash.secret13.v1";
+  const SECRET_SCORE = 7e4;
+  const SECRET_KEY = "santaDash.secret13.v2";
   let practiceSecret = false;
   let masterEarned = false;
   function secretUnlocked() {
@@ -4261,6 +4264,7 @@ function initGame() {
   const BALL_INTERVAL = 190;
   let flight = null;
   let doughActive = false;
+  let doughHardened = false;
   let doughSealedAnnounced = false;
   let levelElapsed = 0;
   let shakeTimer = 0;
@@ -4329,6 +4333,7 @@ function initGame() {
     workshopState = "none";
     workshopTimer = 0;
     doughActive = false;
+    doughHardened = false;
     doughSealedAnnounced = false;
     leverOn = false;
     teleports = [null, null];
@@ -4622,15 +4627,49 @@ function initGame() {
     }
     return false;
   }
+  function santaReachable() {
+    var _a;
+    const walkable = /* @__PURE__ */ new Set([
+      TILE.EMPTY,
+      TILE.SNOW,
+      TILE.GIFT,
+      TILE.CANDY_CANE,
+      TILE.KEY,
+      TILE.PLANK_ITEM,
+      TILE.LID_ITEM,
+      TILE.STAR,
+      TILE.BRIDGE,
+      TILE.LICHEN,
+      TILE.TELEPORT
+    ]);
+    const seen = /* @__PURE__ */ new Set([player.y * COLS + player.x]);
+    const queue = [[player.x, player.y]];
+    for (let qi = 0; qi < queue.length; qi++) {
+      const [x, y] = queue[qi];
+      const next = DIRS4.map((d) => [x + d.dx, y + d.dy]);
+      if (grid[y][x] === TILE.TELEPORT && leverOn && teleports[0] && teleports[1]) {
+        const o = teleports[0].x === x && teleports[0].y === y ? teleports[1] : teleports[0];
+        next.push([o.x, o.y]);
+      }
+      for (const [nx, ny] of next) {
+        const k = ny * COLS + nx;
+        if (seen.has(k) || !walkable.has((_a = grid[ny]) == null ? void 0 : _a[nx])) continue;
+        seen.add(k);
+        queue.push([nx, ny]);
+      }
+    }
+    return seen;
+  }
   function spawnCandyCane() {
     var _a;
     if (LEVELS[currentLevelIdx].noCandy) return true;
+    const reach = santaReachable();
     if (candiesSpawned >= ((_a = LEVELS[currentLevelIdx].candyMax) != null ? _a : CANDY_MAX_PER_LEVEL)) return true;
     const preferred = [];
     const fallback = [];
     for (let y = 1; y <= ROWS - 2; y++) {
       for (let x = 1; x <= COLS - 2; x++) {
-        if (grid[y][x] === TILE.EMPTY && !ovenZone.has(y * COLS + x) && !enemies.some((e) => e.home && e.home.has(y * COLS + x))) {
+        if (grid[y][x] === TILE.EMPTY && reach.has(y * COLS + x) && !ovenZone.has(y * COLS + x) && !enemies.some((e) => e.home && e.home.has(y * COLS + x))) {
           if (!sleighPulled && sleighPos && Math.abs(sleighPos.x - x) + Math.abs(sleighPos.y - y) <= 2) {
             continue;
           }
@@ -4756,7 +4795,7 @@ function initGame() {
   function explodeEnemy(ex, ey) {
     audio.playExplosion();
     shake(0.4, 7);
-    score += 250;
+    score += 500;
     enemies = enemies.filter((e) => !(e.x === ex && e.y === ey));
     for (let dy = -1; dy <= 1; dy++) {
       for (let dx = -1; dx <= 1; dx++) {
@@ -5072,6 +5111,7 @@ function initGame() {
         spawnParticles(c.x, c.y, "#2d6a4f", 4);
       }
       shake(0.5, 6);
+      doughHardened = true;
       audio.playDoughTrees();
       spawnFloatingText(cells[0].x, cells[0].y, "THE DOUGH OVERGREW AND HARDENED! 🎄");
       return;
@@ -5375,8 +5415,22 @@ function initGame() {
     }
   }
   function completeLevel() {
-    const timeBonus = Math.ceil(timeLeft) * 10;
-    score += timeBonus;
+    const timeBonus = Math.ceil(timeLeft) * 5;
+    let clean = !LEVELS[currentLevelIdx].secret && !doughHardened;
+    for (let y = 0; clean && y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        if (grid[y][x] === TILE.GIFT || grid[y][x] === TILE.DOUGH) {
+          clean = false;
+          break;
+        }
+      }
+    }
+    const cleanBonus = clean ? CLEAN_BONUS : 0;
+    if (clean) {
+      cleanLevels++;
+      hudFlashTimer = 1.4;
+    }
+    score += timeBonus + cleanBonus;
     updateHUD();
     audio.stopMusic();
     audio.playWin();
@@ -5386,7 +5440,8 @@ function initGame() {
     starsPossible += 3;
     for (let i = 0; i < stars; i++) audio.playStar(i);
     stateMessage = `Level complete!  ${"★".repeat(stars)}${"☆".repeat(3 - stars)}
-Time bonus: +${timeBonus} pts`;
+Time bonus: +${timeBonus} pts` + (clean ? `
+${L13_TXT.cleanLevel}` : "");
     stateBannerTimer = 2.6;
     state = "LEVEL_CLEAR";
   }
@@ -7345,7 +7400,7 @@ ${L13_TXT.teaserScore(score)}`;
       }
     }
   }
-  const HS_KEY = "santaDash.highscores.v1";
+  const HS_KEY = "santaDash.highscores.v2";
   const HS_NAME_KEY = "santaDash.lastName.v1";
   const HS_SIZE = 10;
   const HS_COLORS = [
@@ -7505,6 +7560,7 @@ ${L13_TXT.teaserScore(score)}`;
     score = 0;
     lives = 3;
     totalStars = 0;
+    cleanLevels = 0;
     starsPossible = 0;
     gameWon = false;
     document.getElementById("screen-start").classList.add("hidden");

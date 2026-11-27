@@ -1427,7 +1427,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.27</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.28</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2851,16 +2851,17 @@
         unlocked: 'TAJNÝ LEVEL ODEMČEN! ⭐',
         secretLevel: 'TAJNÁ ÚROVEŇ',
         levelOf: (i, n) => `ÚROVEŇ ${i} / ${n}`,
-        teaser: 'Na hradě krále elfů prý někdo čeká… (60 000 bodů)',
+        teaser: 'Na hradě krále elfů prý někdo čeká… (70 000 bodů)',
         teaserLine: 'Na hradě krále elfů prý někdo čeká…',
-        teaserScore: (n) => `Máš ${fmtPoints(n)} b. – potřeba je 60 000 b.`,
-        locked: '🔒 Tajný level odemkne jen 60 000 bodů ve hře',
+        teaserScore: (n) => `Máš ${fmtPoints(n)} b. – potřeba je 70 000 b.`,
+        locked: '🔒 Tajný level odemkne jen 70 000 bodů ve hře',
         masterTitle: '🦌 SANTA JE ZACHRÁNĚN! 🎅',
         masterMsg: 'Sob osvobodil Santu z hradu krále elfů! Získáváš titul XMAS MASTER 👑',
         practiceTitle: '⭐ TAJNÝ LEVEL',
         practiceWin: 'Santa je zachráněn! Tréninková hra se do tabulky rekordů nezapisuje.',
         practiceLose: 'Tréninková hra se do tabulky rekordů nezapisuje.',
         masterNote: '👑 = XMAS MASTER',
+        cleanLevel: '✨ ČISTÝ LEVEL! +1 500 b.',
         finale: 'VESELÉ VÁNOCE!',
         introLichens: (n, t) => `🌿 ${n} lišejníků   ⏱ ${t} s`,
         finaleSkip: 'ťukni pro pokračování'
@@ -2874,10 +2875,12 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
       }
+      const CLEAN_BONUS = 1500;          // odměna za čistý level (žádný dárek nezůstal)
+      let cleanLevels = 0;
       const REGULAR_LEVELS = 12;          // tajná úroveň 13 je až za nimi
       const SECRET_LEVEL_IDX = 12;
-      const SECRET_SCORE = 60000;         // tolik bodů odemkne tajnou úroveň
-      const SECRET_KEY = 'santaDash.secret13.v1';
+      const SECRET_SCORE = 70000;         // tolik bodů odemkne tajnou úroveň
+      const SECRET_KEY = 'santaDash.secret13.v2'; // v2: odemyká se nově za 70 000
       let practiceSecret = false;         // tajná úroveň spuštěná z menu (bez rekordů)
       let masterEarned = false;           // hráč v této hře osvobodil Santu
       function secretUnlocked() {
@@ -2975,6 +2978,7 @@
 
       // Perníkové těsto
       let doughActive = false;
+      let doughHardened = false;   // těsto přerostlo na stromky – level už nemůže být čistý
       let doughSealedAnnounced = false;
       let levelElapsed = 0;
 
@@ -3056,6 +3060,7 @@
         workshopState = 'none';
         workshopTimer = 0;
         doughActive = false;
+        doughHardened = false;
         doughSealedAnnounced = false;
         leverOn = false;
         teleports = [null, null];
@@ -3354,15 +3359,39 @@
         return false;
       }
 
+      // Kam Santa z místa, kde stojí, opravdu dojde (sníh se dá prokopat, teleport přenese)
+      function santaReachable() {
+        const walkable = new Set([TILE.EMPTY, TILE.SNOW, TILE.GIFT, TILE.CANDY_CANE, TILE.KEY, TILE.PLANK_ITEM,
+          TILE.LID_ITEM, TILE.STAR, TILE.BRIDGE, TILE.LICHEN, TILE.TELEPORT]);
+        const seen = new Set([player.y * COLS + player.x]);
+        const queue = [[player.x, player.y]];
+        for (let qi = 0; qi < queue.length; qi++) {
+          const [x, y] = queue[qi];
+          const next = DIRS4.map(d => [x + d.dx, y + d.dy]);
+          if (grid[y][x] === TILE.TELEPORT && leverOn && teleports[0] && teleports[1]) {
+            const o = teleports[0].x === x && teleports[0].y === y ? teleports[1] : teleports[0];
+            next.push([o.x, o.y]);
+          }
+          for (const [nx, ny] of next) {
+            const k = ny * COLS + nx;
+            if (seen.has(k) || !walkable.has(grid[ny]?.[nx])) continue;
+            seen.add(k);
+            queue.push([nx, ny]);
+          }
+        }
+        return seen;
+      }
+
       function spawnCandyCane() {
         if (LEVELS[currentLevelIdx].noCandy) return true;
+        const reach = santaReachable();
         if (candiesSpawned >= (LEVELS[currentLevelIdx].candyMax ?? CANDY_MAX_PER_LEVEL)) return true;
         const preferred = [];
         const fallback = [];
 
         for (let y = 1; y <= ROWS - 2; y++) {
           for (let x = 1; x <= COLS - 2; x++) {
-            if (grid[y][x] === TILE.EMPTY && !ovenZone.has(y * COLS + x) &&
+            if (grid[y][x] === TILE.EMPTY && reach.has(y * COLS + x) && !ovenZone.has(y * COLS + x) &&
                 !enemies.some(e => e.home && e.home.has(y * COLS + x))) {
               // Nikdy ne do okolí neodtažených saní – zablokovala by místo, kam je sob odtáhne
               if (!sleighPulled && sleighPos && Math.abs(sleighPos.x - x) + Math.abs(sleighPos.y - y) <= 2) {
@@ -3484,7 +3513,7 @@
       function explodeEnemy(ex, ey) {
         audio.playExplosion();
         shake(0.4, 7);
-        score += 250;
+        score += 500;
         enemies = enemies.filter(e => !(e.x === ex && e.y === ey));
 
         for (let dy = -1; dy <= 1; dy++) {
@@ -3844,6 +3873,7 @@
             spawnParticles(c.x, c.y, '#2d6a4f', 4);
           }
           shake(0.5, 6);
+          doughHardened = true;
           audio.playDoughTrees();
           spawnFloatingText(cells[0].x, cells[0].y, 'TĚSTO PŘEROSTLO A ZTVRDLO! 🎄');
           return;
@@ -4178,8 +4208,17 @@
       }
 
       function completeLevel() {
-            const timeBonus = Math.ceil(timeLeft) * 10;
-            score += timeBonus;
+            const timeBonus = Math.ceil(timeLeft) * 5;
+            // Čistý level: na mapě nezůstal žádný dárek ani těsto (a pec nepřerostla)
+            let clean = !LEVELS[currentLevelIdx].secret && !doughHardened;
+            for (let y = 0; clean && y < ROWS; y++) {
+              for (let x = 0; x < COLS; x++) {
+                if (grid[y][x] === TILE.GIFT || grid[y][x] === TILE.DOUGH) { clean = false; break; }
+              }
+            }
+            const cleanBonus = clean ? CLEAN_BONUS : 0;
+            if (clean) { cleanLevels++; hudFlashTimer = 1.4; }
+            score += timeBonus + cleanBonus;
             updateHUD();
             audio.stopMusic();
             audio.playWin();
@@ -4189,7 +4228,7 @@
             totalStars += stars;
             starsPossible += 3;
             for (let i = 0; i < stars; i++) audio.playStar(i);
-            stateMessage = `Úroveň splněna!  ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}\nČasový bonus: +${timeBonus} b.`;
+            stateMessage = `Úroveň splněna!  ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}\nČasový bonus: +${timeBonus} b.` + (clean ? `\n${L13_TXT.cleanLevel}` : '');
             stateBannerTimer = 2.6;
             state = 'LEVEL_CLEAR';
       }
@@ -6261,7 +6300,7 @@
               audio.playStarCollect();
               audio.startMusic(false);
             } else if (currentLevelIdx + 1 === REGULAR_LEVELS) {
-              // Bez 60 000 bodů: tajemná hláška a teprve pak titulky
+              // Bez 70 000 bodů: tajemná hláška a teprve pak titulky
               stateMessage = `${L13_TXT.teaserLine}\n${L13_TXT.teaserScore(score)}`;
               stateBannerTimer = 4.5;
               state = 'TEASER';
@@ -6338,7 +6377,7 @@
       // ---------------------------------------------------------
       // TABULKA REKORDŮ – 10 míst, ukládá se jen v tomto prohlížeči
       // ---------------------------------------------------------
-      const HS_KEY = 'santaDash.highscores.v1';
+      const HS_KEY = 'santaDash.highscores.v2'; // v2: nové bodování (čistý level), stará tabulka se nepoužívá
       const HS_NAME_KEY = 'santaDash.lastName.v1';
       const HS_SIZE = 10;
       const HS_COLORS = [
@@ -6498,6 +6537,7 @@
         score = 0;
         lives = 3;
         totalStars = 0;
+        cleanLevels = 0;
         starsPossible = 0;
         gameWon = false;
         document.getElementById('screen-start').classList.add('hidden');

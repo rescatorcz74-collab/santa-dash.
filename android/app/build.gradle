@@ -10,8 +10,8 @@ android {
         applicationId 'cz.smejc.santadash'
         minSdk 21
         targetSdk 35
-        versionCode 77
-        versionName '5.27'
+        versionCode 78
+        versionName '5.28'
     }
 
     // Dvě jazykové verze: cz (Vánoční Santa Dash) a en (Christmas Santa Dash).
