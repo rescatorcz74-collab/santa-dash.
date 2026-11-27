@@ -440,6 +440,7 @@
     /* tajná úroveň má v liště víc položek – číslo úrovně tam není potřeba */
     body.secret-level .hud-item:has(#hud-level) { display: none; }
     #btn-secret { border-color: #c77dff; color: #e0aaff; box-shadow: 0 0 10px rgba(199, 125, 255, 0.45); }
+    #btn-newyear { border-color: #ffd166; color: #ffe8a3; box-shadow: 0 0 10px rgba(255, 209, 102, 0.5); }
     .hud-item.bonus-flash span.val {
       color: var(--accent-green);
       text-shadow: 0 0 10px var(--accent-green), 0 0 18px var(--accent-gold);
@@ -1232,13 +1233,14 @@
       <div class="hud-group">
         <div class="hud-item">Level: <span class="val" id="hud-level">–</span></div>
         <div class="hud-item" id="hud-gifts-box"><span id="hud-gifts-label">Presents</span>: <span class="val" id="hud-gifts">0/10</span></div>
-        <div class="hud-item">Time: <span class="val" id="hud-time">120</span>s</div>
+        <div class="hud-item">Time: <span class="val" id="hud-time">120</span><span id="hud-time-s">s</span></div>
         <div class="hud-item">Score: <span class="val" id="hud-score">0</span></div>
         <div class="hud-item hidden-item" id="hud-workshop-box" title="Santa's Workshop">🔨 Workshop: <span class="val" id="hud-workshop">idle</span></div>
         <div class="hud-item hidden-item" id="hud-plank-box" title="Catapult plank">🪵 Plank: <span class="val" id="hud-plank">–</span></div>
         <div class="hud-item hidden-item" id="hud-lid-box" title="Oven lid">🍳 Lid: <span class="val" id="hud-lid">–</span></div>
         <div class="hud-item hidden-item" id="hud-key-box" title="Gate key">🔑 Key: <span class="val" id="hud-key">–</span></div>
         <div class="hud-item hidden-item" id="hud-cannon-box" title="Snow cannon">❄️ Cannon: <span class="val" id="hud-cannon">3</span></div>
+        <div class="hud-item hidden-item" id="hud-elves-box" title="Elves in the fortress">🧝 Elves: <span class="val" id="hud-elves">20</span></div>
         <div class="hud-item">Lives: <span class="val" id="hud-lives">❤️❤️❤️</span></div>
       </div>
       <div class="hud-buttons">
@@ -1315,6 +1317,7 @@
         <p class="hs-note tv-only">Remote: OK = edit name (▲▼ letter, ◀▶ move), OK again = done.</p>
         <button type="button" class="retro-btn primary" id="btn-start">▶ PLAY</button>
         <button type="button" class="retro-btn hidden-secret" id="btn-secret" style="margin-top:8px">⭐ Secret level</button>
+        <button type="button" class="retro-btn hidden-secret" id="btn-newyear" style="margin-top:8px">🎆 New Year's Eve</button>
         <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:center">
           <button type="button" class="retro-btn hidden-install" id="btn-install">📲 Install app</button>
           <button type="button" class="retro-btn" id="btn-scores">🏆 High Scores</button>
@@ -1427,7 +1430,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.30</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.31</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2465,6 +2468,28 @@
           notes.forEach((n, i) => this.playTone(n, 'square', 0.14, 0.1, null, times[i]));
         }
 
+        playSaw() {
+          // motorová pila: bzučivý pilovitý tón s pilinami
+          this.playTone(95, 'sawtooth', 0.16, 0.07, 150);
+          this.playTone(190, 'square', 0.16, 0.035, 260);
+          this.playNoise(0.12, 0.05);
+        }
+
+        playCannonShot() {
+          this.playTone(880, 'square', 0.05, 0.07, 1760);
+          this.playNoise(0.06, 0.06);
+        }
+
+        playFirework() {
+          this.playNoise(0.25, 0.09);
+          [1568, 2093, 2637].forEach((f, i) => this.playTone(f, 'triangle', 0.08, 0.05, null, 0.06 + i * 0.05));
+        }
+
+        playStunned() {
+          this.playTone(520, 'square', 0.1, 0.08, 260);
+          this.playTone(330, 'square', 0.18, 0.07, 160, 0.1);
+        }
+
         playDie() {
           const notes = [392.0, 349.23, 311.13, 261.63];
           notes.forEach((n, i) => this.playTone(n, 'sawtooth', 0.18, 0.11, null, i * 0.15));
@@ -2796,6 +2821,36 @@
             "#..H.H.H.PAA##########",
             "######################"
           ]
+        },
+        {
+          name: "14. New Year's Eve",
+          hint: "Saw your way through the woods, grab the snowballs, then stand under a cannon and fire with the up arrow!",
+          required: 0,
+          time: 999,
+          secret: true,
+          newYear: true,           // silvestrovský bonus
+          noDeath: true,           // oddechový level: žádné umírání
+          chainsaw: true,          // Santa má motorovou pilu
+          noCandy: true,
+          chasmCols: [],           // vzduch v pevnosti se kreslí jako noční nebe
+          nyRows: [2, 4, 6, 8],    // řady plošin se skřítky
+          nyElves: 20,
+          map: [
+            "######################",
+            "#TVT.TVT.T#AAAAAAAAAA#",
+            "#.TVTT.TVT#AAAAAAAAAA#",
+            "#VT.TVT.TV#AAAAAAAAAA#",
+            "#T.TVT.VTT#AAAAAAAAAA#",
+            "#.VTTVTVT.#AAAAAAAAAA#",
+            "#TVT.VT.TV#AAAAAAAAAA#",
+            "#T.TVT.VTV#AAAAAAAAAA#",
+            "#VTTVTVT.T#AAAAAAAAAA#",
+            "#.TVT.TT.V#AAAAAAAAAA#",
+            "#TV.TVTVTV#AAAAAAAAAA#",
+            "#.T.V.TVV.#ANANANANAN#",
+            "#S.........          #",
+            "######################"
+          ]
         }
       ];
 
@@ -2830,8 +2885,59 @@
         CAPTIVE: 27,  // Uvězněný Santa (tajný level)
         LICHEN: 28,   // Lišejník – síla a rychlost pro soba
         CANNON: 29,   // Sněžné dělo – střílí kolmo vzhůru
-        BRIDGE: 30    // Most přes propast (spustí ho páka)
+        BRIDGE: 30,   // Most přes propast (spustí ho páka)
+        AMMO: 31      // Sněhové koule k sebrání (Silvestr)
       };
+
+      // New Year's Eve bonus texts
+      const NY_TXT = {
+        ammoLabel: 'Snowballs',
+        noAmmo: 'OUT OF SNOWBALLS – BACK TO THE WOODS! 🌲',
+        refill: 'FRESH SNOWBALLS IN THE WOODS! ❄️',
+        curses: ['DANG IT!', 'DARN IT!', 'AW, SHUCKS!', 'OH, FUDGE!'],
+        hit: '+300 🎆',
+        allDone: 'ALL ELVES DOWN! +3,000',
+        wish: (y) => `HAPPY NEW YEAR ${y}!`,
+        wishSmall: (y) => `Cheers to ${y}!`,
+        unlocked: '🎆 NEW YEAR’S EVE BONUS UNLOCKED!',
+        levelLabel: 'NEW YEAR’S EVE BONUS',
+        locked: '🔒 Only 90,000 points after level 13 unlock New Year’s Eve',
+        teaserLine: 'They say New Year’s Eve will be even merrier…',
+        teaserScore: (n) => `You have ${fmtPoints(n)} pts – you need 90,000.`,
+        endTitle: '🎆 HAPPY NEW YEAR! 🎆',
+        endMsg: 'New Year’s Eve bonus complete! XMAS MASTER 👑 plus fireworks 🎆',
+        practiceTitle: '🎆 NEW YEAR’S EVE',
+        practiceWin: 'Happy New Year! Practice games are not saved to the high scores.',
+        nyNote: '🎆 = New Year’s Eve bonus',
+        happyNow: '🎆 NEW YEAR!'
+      };
+      const LCD_NY = { to: 'TO NEW YEAR', happy: ['HAPPY', 'NEW YEAR!'] };
+      const NY_SCORE = 90000;             // tolik bodů po 13. levelu odemkne Silvestr
+      const NY_KEY = 'santaDash.newyear14.v1';
+      const SECRET2_IDX = 13;
+      let newYearEarned = false;
+      function newYearUnlocked() {
+        try { return localStorage.getItem(NY_KEY) === '1'; } catch (e) { return false; }
+      }
+      // čas do Nového roku podle hodin v telefonu
+      function nyTarget() {
+        const now = new Date();
+        return now.getMonth() === 0 && now.getDate() === 1 ? null : new Date(now.getFullYear() + 1, 0, 1);
+      }
+      function nyYear() {
+        const now = new Date();
+        return now.getMonth() === 0 ? now.getFullYear() : now.getFullYear() + 1;
+      }
+      function nyCountdown() {
+        const t = nyTarget();
+        if (!t) return NY_TXT.happyNow;
+        let sec = Math.max(0, Math.floor((t - new Date()) / 1000));
+        const d = Math.floor(sec / 86400); sec -= d * 86400;
+        const h = Math.floor(sec / 3600); sec -= h * 3600;
+        const m = Math.floor(sec / 60); const ss = sec - m * 60;
+        const p2 = (n) => String(n).padStart(2, '0');
+        return d > 0 ? `${d}d ${p2(h)}:${p2(m)}` : `${p2(h)}:${p2(m)}:${p2(ss)}`;
+      }
 
       // Texty tajné úrovně na jednom místě (kvůli překladu)
       const L13_TXT = {
@@ -2963,6 +3069,9 @@
       let bridgeSet = new Set();
       let captivePos = null;
       let santaFreed = false;
+      // Silvestr
+      let nyState = null;       // { ammo, elves, balls, shots, fx, stun, refillT, sky }
+      let sawHits = 0, sawCell = '';
       let hintCooldown = 0;
 
       // Katapult
@@ -3078,6 +3187,19 @@
         bridgeSet = new Set((lvl.bridge || []).map(([x, y]) => y * COLS + x));
         captivePos = null;
         santaFreed = false;
+        sawHits = 0; sawCell = '';
+        nyState = null;
+        if (lvl.newYear) {
+          nyState = { ammo: 0, elves: [], balls: [], shots: [], fx: [], stun: 0, refillT: 0, sky: 1.5, done: false, t: 0, curse: 0 };
+          for (let i = 0; i < lvl.nyElves; i++) {
+            const row = lvl.nyRows[i % lvl.nyRows.length];
+            nyState.elves.push({
+              x: 11.5 + ((i * 1.9) % 8.6), y: row,
+              dir: i % 2 ? 1 : -1, speed: 0.9 + ((i * 37) % 10) / 9,
+              throwT: 2 + ((i * 53) % 40) / 8
+            });
+          }
+        }
         hintCooldown = 0;
         hasPlank = false;
         hasPlankLevel = false;
@@ -3143,6 +3265,7 @@
                 keysTotal++;
                 break;
               case 'H': grid[y][x] = TILE.LICHEN; break;
+              case 'V': grid[y][x] = TILE.AMMO; break;
               case 'N':
                 grid[y][x] = TILE.CANNON;
                 cannonPos = { x, y };
@@ -3228,7 +3351,7 @@
 
       function updateHUD() {
         document.getElementById('hud-level').textContent =
-          (LEVELS[currentLevelIdx].secret ? `⭐${currentLevelIdx + 1}` : `${currentLevelIdx + 1}/${REGULAR_LEVELS}`) + (devMode ? ' 🛠' : '');
+          (LEVELS[currentLevelIdx].newYear ? `🎆${currentLevelIdx + 1}` : LEVELS[currentLevelIdx].secret ? `⭐${currentLevelIdx + 1}` : `${currentLevelIdx + 1}/${REGULAR_LEVELS}`) + (devMode ? ' 🛠' : '');
         const lichenLevel = lichensRequired > 0;
         document.getElementById('hud-gifts-label').textContent = lichenLevel ? L13_TXT.lichenLabel : L13_TXT.giftLabel;
         if (lichenLevel) {
@@ -3245,11 +3368,20 @@
           giftsBox.classList.remove('ready');
         }
         }
+        if (nyState) {
+          document.getElementById('hud-gifts-label').textContent = NY_TXT.ammoLabel;
+          document.getElementById('hud-gifts').textContent = `❄${nyState.ammo}`;
+          document.getElementById('hud-gifts-box').classList.toggle('ready', nyState.ammo > 0);
+        }
+        document.getElementById('hud-elves-box').classList.toggle('hidden-item', !nyState);
+        if (nyState) document.getElementById('hud-elves').textContent = nyState.elves.length;
         const cannonBox = document.getElementById('hud-cannon-box');
-        cannonBox.classList.toggle('hidden-item', !cannonPos);
+        cannonBox.classList.toggle('hidden-item', !cannonPos || !!nyState);
         cannonBox.classList.toggle('ready', !!cannonPos && cannonShots > 0 && lichens >= lichensRequired);
         document.getElementById('hud-cannon').textContent = king && !king.alive ? '👑💥' : `${cannonShots}`;
-        document.getElementById('hud-time').textContent = Math.max(0, Math.ceil(timeLeft));
+        // Silvestr: místo časového limitu odpočet do Nového roku
+        document.getElementById('hud-time').textContent = nyState ? nyCountdown() : Math.max(0, Math.ceil(timeLeft));
+        document.getElementById('hud-time-s').style.display = nyState ? 'none' : '';
         const plankBox = document.getElementById('hud-plank-box');
         plankBox.classList.toggle('hidden-item', !hasPlankLevel);
         plankBox.classList.toggle('ready', hasPlank || plankPlaced);
@@ -3486,6 +3618,7 @@
 
       function triggerPlayerDeath(reason) {
         if (state !== 'PLAYING') return;
+        if (LEVELS[currentLevelIdx].noDeath) return;   // Silvestr: oddechový level
         audio.stopMusic();
         audio.playDie();
         spawnParticles(player.x, player.y, '#ef476f', 24);
@@ -3622,6 +3755,15 @@
                 updated[y + 1][x] = true;
               }
               else if (falling[y][x] && below === TILE.SANTA) {
+                if (LEVELS[currentLevelIdx].noDeath) {
+                  // Silvestr: stromek se o Santu (a jeho pilu) rozletí na třísky
+                  grid[y][x] = TILE.EMPTY;
+                  falling[y][x] = false;
+                  spawnParticles(x, y, '#2d6a4f', 10);
+                  spawnParticles(x, y, '#ddb892', 8);
+                  if (!playedThud) { audio.playThud(); playedThud = true; }
+                  continue;
+                }
                 triggerPlayerDeath(item === TILE.TREE ? 'Crushed by a Christmas tree!' : 'Crushed by a heavy present!');
                 return;
               }
@@ -3969,6 +4111,38 @@
         if (!grid[ny] || grid[ny][nx] === undefined) return;
         const target = grid[ny][nx];
 
+        // Silvestr: omráčený Santa se nehne, pila řeže stromky, šipka nahoru pod dělem střílí
+        if (LEVELS[currentLevelIdx].newYear) {
+          if (nyState.stun > 0) return;
+          if (target === TILE.CANNON && dy === -1) { fireNyCannon(nx, ny); return; }
+          if (target === TILE.TREE) {
+            const key = nx + ',' + ny;
+            if (sawCell !== key) { sawCell = key; sawHits = 0; }
+            sawHits++;
+            audio.playSaw();
+            spawnParticles(nx, ny, '#ddb892', 4);
+            if (sawHits >= 2) {
+              grid[ny][nx] = TILE.EMPTY;
+              falling[ny][nx] = false;
+              spawnParticles(nx, ny, '#2d6a4f', 12);
+              spawnParticles(nx, ny, '#ffd166', 6);
+              score += 10;
+              sawCell = '';
+              updateHUD();
+            }
+            return;
+          }
+          if (target === TILE.AMMO) {
+            moveSantaTo(nx, ny);
+            nyState.ammo++;
+            score += 50;
+            spawnParticles(nx, ny, '#ffffff', 10);
+            audio.playGift();
+            updateHUD();
+            return;
+          }
+        }
+
         // Poklop: Santa stojí u otvoru pece a zatlačí směrem do něj → přiklopí pec
         const mouth = LEVELS[currentLevelIdx].ovenMouth;
         if (hasLid && mouth && nx === mouth.x && ny === mouth.y &&
@@ -4244,6 +4418,233 @@
         else if (target === TILE.ENEMY) {
           triggerPlayerDeath('You ran into a naughty elf!');
         }
+      }
+
+
+      // ---------------------------------------------------------
+      // SILVESTR: děla, skřítci házející koule, ohňostroje
+      // ---------------------------------------------------------
+      const NY_SHOT_SPEED = 30;     // koule z děla letí rychle…
+      const NY_BALL_SPEED = 4.5;    // …koule od skřítků padají pomalu
+      const NY_FX_COLORS = ['#ff4d6d', '#ffd166', '#06d6a0', '#4cc9f0', '#c77dff', '#ffffff', '#ff9f1c'];
+
+      function fireNyCannon(cx, cy) {
+        if (nyState.ammo <= 0) {
+          if (hintCooldown <= 0) { hintCooldown = 2.2; audio.playLocked(); spawnFloatingText(cx, cy, NY_TXT.noAmmo); }
+          return;
+        }
+        nyState.ammo--;
+        nyState.shots.push({ x: cx, y: cy - 0.4, py: cy - 0.4 });
+        audio.playCannonShot();
+        spawnParticles(cx, cy - 1, '#ffffff', 6);
+        updateHUD();
+      }
+
+      function nyBurst(x, y, big) {
+        const n = big ? 46 : 26;
+        const c1 = NY_FX_COLORS[Math.floor(Math.random() * NY_FX_COLORS.length)];
+        const c2 = NY_FX_COLORS[Math.floor(Math.random() * NY_FX_COLORS.length)];
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2 + Math.random() * 0.2;
+          const sp = (big ? 5 : 3.2) * (0.6 + Math.random() * 0.5);
+          nyState.fx.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: big ? 1.6 : 1.0, max: big ? 1.6 : 1.0, c: i % 2 ? c1 : c2 });
+        }
+      }
+
+      function updateNewYear(dt) {
+        const S = nyState;
+        if (!S) return;
+        S.t += dt;
+        if (S.stun > 0) S.stun = Math.max(0, S.stun - dt);
+        // skřítci pobíhají po plošinách a házejí koule
+        for (const e of S.elves) {
+          e.x += e.dir * e.speed * dt;
+          if (e.x < 11.05) { e.x = 11.05; e.dir = 1; }
+          if (e.x > 19.95) { e.x = 19.95; e.dir = -1; }
+          if (Math.random() < dt * 0.25) e.dir = -e.dir;
+          e.throwT -= dt;
+          if (e.throwT <= 0 && state === 'PLAYING') {
+            e.throwT = 2.5 + Math.random() * 4.5;
+            if (S.balls.length < 7) S.balls.push({ x: e.x, y: e.y + 0.45 });
+          }
+        }
+        // koule od skřítků
+        for (const b of S.balls) b.y += NY_BALL_SPEED * dt;
+        S.balls = S.balls.filter(b => {
+          if (player.y === 12 && b.y >= 11.55 && Math.abs(b.x - player.x) < 0.6 && S.stun <= 0 && state === 'PLAYING') {
+            S.stun = 2;
+            spawnParticles(player.x, player.y, '#ffffff', 14);
+            spawnFloatingText(player.x, player.y - 1, NY_TXT.curses[S.curse++ % NY_TXT.curses.length]);
+            audio.playStunned();
+            shake(0.2, 3);
+            return false;
+          }
+          if (b.y >= 12.45) { spawnParticles(Math.round(b.x), 12, '#ffffff', 5); return false; }
+          return true;
+        });
+        // koule z děla
+        for (const sh of S.shots) {
+          sh.py = sh.y;
+          sh.y -= NY_SHOT_SPEED * dt;
+          const hit = S.elves.find(e => Math.abs(e.x - sh.x) < 0.62 && e.y <= sh.py + 0.4 && e.y >= sh.y - 0.4);
+          if (hit) {
+            sh.dead = true;
+            S.elves = S.elves.filter(e => e !== hit);
+            nyBurst(hit.x + 0.5, hit.y + 0.5, false);
+            spawnFloatingText(Math.round(hit.x), hit.y, NY_TXT.hit);
+            score += 300;
+            audio.playFirework();
+            updateHUD();
+            if (!S.elves.length && !S.done) completeNewYear();
+          } else if (sh.y < 0.6) {
+            sh.dead = true;
+            spawnParticles(sh.x, 1, '#ffffff', 6);
+          }
+        }
+        S.shots = S.shots.filter(sh => !sh.dead);
+        // jiskry ohňostrojů
+        for (const f of S.fx) { f.vy += 3.2 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.life -= dt; }
+        S.fx = S.fx.filter(f => f.life > 0);
+        // vzdálené ohňostroje na obloze nad pevností
+        S.sky -= dt;
+        if (S.sky <= 0) { S.sky = 1.2 + Math.random() * 1.8; nyBurst(11.5 + Math.random() * 9, 1.2 + Math.random() * 2, false); }
+        // když dojdou koule, v lese napadnou nové
+        let left = 0;
+        for (let y = 1; y < ROWS - 1 && !left; y++) for (let x = 1; x <= 9; x++) if (grid[y][x] === TILE.AMMO) { left++; break; }
+        if (S.ammo === 0 && !left && S.elves.length && !S.shots.length) {
+          S.refillT += dt;
+          if (S.refillT > 1.5) {
+            S.refillT = 0;
+            const cells = [];
+            for (let y = 1; y <= 12; y++) for (let x = 1; x <= 9; x++) {
+              if ((grid[y][x] === TILE.EMPTY || grid[y][x] === TILE.SNOW) && !(x === player.x && y === player.y)) cells.push([x, y]);
+            }
+            for (let i = 0; i < 10 && cells.length; i++) {
+              const [x, y] = cells.splice(Math.floor(Math.random() * cells.length), 1)[0];
+              grid[y][x] = TILE.AMMO;
+              spawnParticles(x, y, '#ffffff', 6);
+            }
+            spawnFloatingText(player.x, player.y - 1, NY_TXT.refill);
+            audio.playStarAppear();
+          }
+        } else S.refillT = 0;
+      }
+
+      function completeNewYear() {
+        nyState.done = true;
+        score += 3000;
+        hudFlashTimer = 1.4;
+        spawnFloatingText(15, 5, NY_TXT.allDone);
+        updateHUD();
+        audio.stopMusic();
+        audio.playWin();
+        nyState.finaleT = 0;
+        state = 'NEWYEAR';
+      }
+
+      function finishNewYear() {
+        if (state !== 'NEWYEAR') return;
+        if (practiceSecret) {
+          showEndScreen(NY_TXT.practiceTitle, NY_TXT.practiceWin);
+        } else {
+          masterEarned = true;
+          newYearEarned = true;
+          startCredits(false);
+        }
+      }
+
+      function drawNewYear(timeSec) {
+        const S = nyState;
+        if (!S) return;
+        const T = TILE_SIZE;
+        // ledové plošiny, po kterých běhají skřítci
+        for (const r of LEVELS[currentLevelIdx].nyRows) {
+          ctx.fillStyle = '#90e0ef';
+          ctx.fillRect(11 * T, (r + 1) * T - 7, 10 * T, 5);
+          ctx.fillStyle = '#4cc9f0';
+          ctx.fillRect(11 * T, (r + 1) * T - 2, 10 * T, 2);
+          for (let x = 11; x < 21; x++) { ctx.fillStyle = '#caf0f8'; ctx.fillRect(x * T + 6, (r + 1) * T - 7, 10, 2); }
+        }
+        for (const e of S.elves) {
+          ctx.save();
+          if (e.dir < 0) { ctx.translate((2 * e.x + 1) * T, 0); ctx.scale(-1, 1); }
+          drawSprite(ELF_SPRITE, e.x * T, e.y * T + (Math.floor(timeSec * 6 + e.x) % 2 ? -2 : 0), false, ELF_PALETTE);
+          ctx.restore();
+        }
+        // koule od skřítků (malé, pomalé)
+        for (const b of S.balls) {
+          ctx.fillStyle = '#e0fbfc';
+          ctx.fillRect(b.x * T + T / 2 - 5, b.y * T + T / 2 - 5, 10, 10);
+          ctx.fillStyle = '#9fb4c7';
+          ctx.fillRect(b.x * T + T / 2 - 1, b.y * T + T / 2 + 1, 4, 3);
+        }
+        // koule z děla (velké, rychlé, se stopou)
+        for (const sh of S.shots) {
+          const cx = sh.x * T + T / 2, cy = sh.y * T + T / 2;
+          ctx.fillStyle = 'rgba(255,255,255,0.35)';
+          ctx.fillRect(cx - 4, cy + 8, 8, 26);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 8, cy - 8, 16, 16);
+          ctx.fillStyle = '#bde0fe';
+          ctx.fillRect(cx - 3, cy + 2, 7, 4);
+        }
+        // jiskry ohňostrojů (při závěru se kreslí až nad ztmavením)
+        if (state !== 'NEWYEAR') drawNyFx(1);
+        // pila v Santově ruce a hvězdičky při omráčení
+        const px = player.x * T, py = player.y * T;
+        const face = (player.faceX || 1);
+        ctx.save();
+        if (face < 0) { ctx.translate(2 * px + T, 0); ctx.scale(-1, 1); }
+        const buzz = (Math.floor(timeSec * 30) % 2);
+        ctx.fillStyle = '#ff9f1c';
+        ctx.fillRect(px + 30, py + 22, 10, 9);
+        ctx.fillStyle = '#212529';
+        ctx.fillRect(px + 32, py + 20, 6, 3);
+        ctx.fillStyle = '#adb5bd';
+        ctx.fillRect(px + 39, py + 24, 9, 5);
+        ctx.fillStyle = '#495057';
+        for (let i = 0; i < 3; i++) ctx.fillRect(px + 40 + i * 3 + buzz, py + 23, 1, 1), ctx.fillRect(px + 40 + i * 3 + (1 - buzz), py + 29, 1, 1);
+        ctx.restore();
+        if (S.stun > 0) {
+          for (let i = 0; i < 3; i++) {
+            const a = timeSec * 6 + i * 2.1;
+            ctx.fillStyle = '#ffd166';
+            ctx.fillRect(px + T / 2 + Math.cos(a) * 14 - 3, py - 4 + Math.sin(a) * 4 - 3, 6, 6);
+          }
+        }
+      }
+
+      function drawNyFx(k) {
+        const T = TILE_SIZE;
+        for (const f of nyState.fx) {
+          const a = Math.max(0, f.life / f.max);
+          ctx.globalAlpha = a * 0.35;
+          ctx.fillStyle = f.c;
+          ctx.fillRect(f.x * T - 6 * k, f.y * T - 6 * k, 12 * k, 12 * k);
+          ctx.globalAlpha = a;
+          ctx.fillRect(f.x * T - 3 * k, f.y * T - 3 * k, 6 * k, 6 * k);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawNewYearFinale(timeSec, W, H) {
+        ctx.fillStyle = 'rgba(5, 8, 25, 0.55)';
+        ctx.fillRect(0, 0, W, H);
+        drawNyFx(1.4);
+        const a = Math.min(1, (nyState.finaleT || 0) / 0.8);
+        ctx.globalAlpha = a;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = PIXEL_FONT(64);
+        const y = nyYear();
+        ctx.fillStyle = '#9d0208';
+        ctx.fillText(NY_TXT.wish(y), W / 2 + 4, H * 0.42 + 4);
+        ctx.fillStyle = Math.floor(timeSec * 3) % 2 ? '#ffd166' : '#fff3b0';
+        ctx.fillText(NY_TXT.wish(y), W / 2, H * 0.42);
+        ctx.font = PIXEL_FONT(34);
+        ctx.fillStyle = '#4cc9f0';
+        ctx.fillText(NY_TXT.wishSmall(y), W / 2, H * 0.55);
+        ctx.globalAlpha = 1;
       }
 
       function completeLevel() {
@@ -4868,7 +5269,20 @@
           showEndScreen(L13_TXT.practiceTitle, L13_TXT.practiceWin);
         } else {
           masterEarned = true;
-          startCredits(false);
+          if (score >= NY_SCORE) {
+            if (!devMode) { try { localStorage.setItem(NY_KEY, '1'); } catch (e) {} }
+            document.getElementById('btn-newyear').classList.remove('hidden-secret');
+            loadLevel(SECRET2_IDX, true);
+            spawnFloatingText(10, 6, NY_TXT.unlocked);
+            beginIntro();
+            audio.playStarCollect();
+            audio.startMusic(false);
+          } else {
+            stateMessage = `${NY_TXT.teaserLine}\n${NY_TXT.teaserScore(score)}`;
+            stateBannerTimer = 4.5;
+            state = 'TEASER';
+            audio.playLocked();
+          }
         }
       }
 
@@ -5424,6 +5838,20 @@
         }
         else if (type === TILE.REINDEER) {
           drawReindeerSprite(px, py, timeSec, gx);
+        }
+        else if (type === TILE.AMMO) {
+          // hromádka kulatých sněhových koulí
+          const balls = [[13, 30, 8.5], [29, 30, 8.5], [21, 18, 8.5]];
+          for (const [bx, by, r] of balls) {
+            ctx.fillStyle = '#7f9bb8';
+            ctx.beginPath(); ctx.arc(px + bx + 1, py + by + 2, r, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#f8f9fa';
+            ctx.beginPath(); ctx.arc(px + bx, py + by, r, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#dbe7f3';
+            ctx.beginPath(); ctx.arc(px + bx + 2, py + by + 2.5, r * 0.6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(px + bx - 4, py + by - 5, 4, 3);
+          }
         }
         else if (type === TILE.LICHEN) {
           // Lišejník – šedozelený chomáč na kamínku
@@ -6017,6 +6445,10 @@
           }
         }
 
+        // Silvestr: plošiny, skřítci, koule a ohňostroje
+        if (nyState) drawNewYear(timeSec);
+        if (state === 'NEWYEAR') drawNewYearFinale(timeSec, worldW, worldH);
+
         // Tajná úroveň: silueta hradu, král elfů a letící koule
         if (LEVELS[currentLevelIdx].reindeerHero) {
           drawCastleSilhouette(timeSec);
@@ -6128,7 +6560,7 @@
 
           ctx.fillStyle = '#4cc9f0';
           ctx.font = PIXEL_FONT(26);
-          ctx.fillText(lvl.secret ? L13_TXT.secretLevel : L13_TXT.levelOf(currentLevelIdx + 1, REGULAR_LEVELS), worldW / 2, worldH * 0.37);
+          ctx.fillText(lvl.newYear ? NY_TXT.levelLabel : lvl.secret ? L13_TXT.secretLevel : L13_TXT.levelOf(currentLevelIdx + 1, REGULAR_LEVELS), worldW / 2, worldH * 0.37);
 
           ctx.font = TITLE_FONT(22);
           ctx.fillStyle = '#b5173e';
@@ -6139,7 +6571,7 @@
 
           ctx.font = PIXEL_FONT(26);
           ctx.fillStyle = '#ffffff';
-          ctx.fillText(lvl.lichens ? L13_TXT.introLichens(lvl.lichens, lvl.time) : `🎁 ${lvl.required} presents   ⏱ ${lvl.time} s`, worldW / 2, worldH * 0.55);
+          ctx.fillText(lvl.newYear ? `🧝 ${lvl.nyElves}   ❄ 30   ⏳ ${nyCountdown()}` : lvl.lichens ? L13_TXT.introLichens(lvl.lichens, lvl.time) : `🎁 ${lvl.required} presents   ⏱ ${lvl.time} s`, worldW / 2, worldH * 0.55);
           if (lvl.hint) {
             ctx.fillStyle = '#a8dadc';
             ctx.font = PIXEL_FONT(24);
@@ -6249,7 +6681,7 @@
           secondTimer += dt;
           if (secondTimer >= 1) {
             secondTimer -= 1;
-            timeLeft--;
+            if (!LEVELS[currentLevelIdx].newYear) timeLeft--;   // Silvestr: bez časového limitu
             updateHUD();
             if (timeLeft <= 0) {
               triggerPlayerDeath('Time\'s up!');
@@ -6270,6 +6702,7 @@
           }
 
           if (lichensRequired > 0) updateSecret(dt);
+          if (nyState) updateNewYear(dt);
 
           physicsTimer += dt * 1000;
           if (physicsTimer >= PHYSICS_INTERVAL) {
@@ -6283,7 +6716,7 @@
             patrolTimer -= PATROL_INTERVAL;
             movePatrolElves();
           }
-          if (state === 'PLAYING' && enemyTimer >= ENEMY_INTERVAL) {
+          if (state === 'PLAYING' && enemyTimer >= ENEMY_INTERVAL && !nyState) {
             enemyTimer -= ENEMY_INTERVAL;
             moveEnemies();
           }
@@ -6313,6 +6746,17 @@
         else if (state === 'FINALE') {
           updateFinale(dt);
         }
+        else if (state === 'NEWYEAR') {
+          updateNewYear(dt);
+          nyState.finaleT += dt;
+          nyState.burstT = (nyState.burstT || 0) - dt;
+          if (nyState.burstT <= 0) {
+            nyState.burstT = 0.28;
+            nyBurst(2 + Math.random() * 18, 1.5 + Math.random() * 7, true);
+            if (Math.random() < 0.6) audio.playFirework();
+          }
+          if (nyState.finaleT >= 9) finishNewYear();
+        }
         else if (state === 'TEASER') {
           stateBannerTimer -= dt;
           if (stateBannerTimer <= 0) startCredits(false);
@@ -6321,7 +6765,7 @@
           stateBannerTimer -= dt;
           if (lichensRequired > 0) updateSecret(dt);   // král dopadá i během oslavy
           if (stateBannerTimer <= 0) {
-            if (LEVELS[currentLevelIdx].secret) {
+            if (LEVELS[currentLevelIdx].secret && !LEVELS[currentLevelIdx].newYear) {
               startFinale();
             } else if (currentLevelIdx + 1 < REGULAR_LEVELS) {
               loadLevel(currentLevelIdx + 1, true);
@@ -6405,7 +6849,9 @@
           document.getElementById('screen-start').classList.remove('hidden');
         } else {
           gameWon = true;
-          if (masterEarned) {
+          if (newYearEarned) {
+            showEndScreen(NY_TXT.endTitle, NY_TXT.endMsg);
+          } else if (masterEarned) {
             showEndScreen(L13_TXT.masterTitle, L13_TXT.masterMsg);
           } else {
             showEndScreen('🎄 CHRISTMAS IS SAVED! 🎄', 'Congratulations! You completed every level!');
@@ -6468,7 +6914,7 @@
           if (e) {
             const lvl = e.won ? `${e.level} ✓` : `${e.level}`;
             html += `<tr class="${i === highlightIdx ? 'hs-new' : ''}" style="color:${color}">` +
-              `<td>${i + 1}.</td><td>${e.master ? '👑 ' : ''}${e.name}</td><td class="num">${e.score}</td>` +
+              `<td>${i + 1}.</td><td>${e.master ? '👑' : ''}${e.newyear ? '🎆' : ''}${e.master || e.newyear ? ' ' : ''}${e.name}</td><td class="num">${e.score}</td>` +
               `<td class="num">${lvl}</td><td class="num">${e.stars}</td></tr>`;
           } else {
             html += `<tr class="hs-empty"><td>${i + 1}.</td><td>· · · · · · · ·</td><td class="num">0</td><td class="num">–</td><td class="num">–</td></tr>`;
@@ -6476,6 +6922,7 @@
         }
         html += '</table>';
         if (list.some(e => e && e.master)) html += `<p class="hs-note">${L13_TXT.masterNote}</p>`;
+        if (list.some(e => e && e.newyear)) html += `<p class="hs-note">${NY_TXT.nyNote}</p>`;
         if (devMode) html += '<p class="hs-note">🛠 Test mode – scores are not saved.</p>';
         container.innerHTML = html;
       }
@@ -6527,6 +6974,7 @@
           level: currentLevelIdx + 1,
           won: gameWon,
           master: masterEarned,
+          newyear: newYearEarned,
           stars: totalStars,
           date: new Date().toISOString().slice(0, 10)
         };
@@ -6561,9 +7009,11 @@
 
       function startNewGame(lvlIdx, practice = false) {
         practiceSecret = practice;
+        const practiceIdx = lvlIdx;
         masterEarned = false;
+        newYearEarned = false;
         if (!devMode) lvlIdx = 0; // bez testovacího režimu vždy od začátku
-        if (practice) lvlIdx = SECRET_LEVEL_IDX;
+        if (practice) lvlIdx = practiceIdx === SECRET2_IDX ? SECRET2_IDX : SECRET_LEVEL_IDX;
         maybeShowIosSoundTip();
         // Jméno z úvodní obrazovky – použije se pro tabulku rekordů
         const startInput = document.getElementById('start-name-input');
@@ -6627,7 +7077,7 @@
       // Výběr úrovně
       document.querySelectorAll('.level-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          if (btn.classList.contains('locked-secret')) { showToast(L13_TXT.locked); return; }
+          if (btn.classList.contains('locked-secret')) { showToast(LEVELS[+btn.dataset.lvl].newYear ? NY_TXT.locked : L13_TXT.locked); return; }
           document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
           selectedLevelIdx = parseInt(btn.dataset.lvl, 10);
@@ -6651,6 +7101,8 @@
       document.getElementById('btn-start').addEventListener('click', () => startNewGame(selectedLevelIdx));
       document.getElementById('btn-secret').addEventListener('click', () => startNewGame(SECRET_LEVEL_IDX, true));
       if (secretUnlocked()) document.getElementById('btn-secret').classList.remove('hidden-secret');
+      document.getElementById('btn-newyear').addEventListener('click', () => startNewGame(SECRET2_IDX, true));
+      if (newYearUnlocked()) document.getElementById('btn-newyear').classList.remove('hidden-secret');
       document.getElementById('btn-credits').addEventListener('click', () => { audio.init(); startCredits(true); });
 
       // Rekordy: zadání jména a prohlížení z menu
@@ -6754,7 +7206,7 @@
         b.textContent = (lvl.secret ? '🔒 ' : '') + lvl.name;
         b.title = lvl.name;
         b.addEventListener('click', () => {
-          if (lvl.secret) { showToast(L13_TXT.locked); return; }
+          if (lvl.secret) { showToast(lvl.newYear ? NY_TXT.locked : L13_TXT.locked); return; }
           document.getElementById('screen-pause').classList.add('hidden');
           document.getElementById('screen-start').classList.add('hidden');
           document.getElementById('screen-end').classList.add('hidden');
@@ -7012,6 +7464,7 @@
 
       function onKeyDown(e) {
         if (state === 'FINALE') { skipFinale(); return; }
+        if (state === 'NEWYEAR') { if (nyState.finaleT > 1.2) finishNewYear(); return; }
         document.body.classList.add('kb-nav');
         const target = e.target || document.activeElement;
         const onButton = target && target.tagName === 'BUTTON' && target.closest('.overlay');
@@ -7124,7 +7577,10 @@
       }
 
       window.addEventListener('keydown', (e) => onKeyDown(normalizeKey(e)));
-      window.addEventListener('pointerdown', () => { if (state === 'FINALE') skipFinale(); });
+      window.addEventListener('pointerdown', () => {
+        if (state === 'FINALE') skipFinale();
+        if (state === 'NEWYEAR' && nyState.finaleT > 1.2) finishNewYear();
+      });
       window.addEventListener('keyup', (e) => onKeyUp(normalizeKey(e)));
 
       // Tlačítko Start na gamepadu u aplikace pro Android TV (posílá ho Java část)
@@ -7526,13 +7982,24 @@
           if (today > target) target = new Date(y + 1, 11, LCD_TXT.xmasDay);
           days = Math.round((target - today) / 86400000);
         }
-        const key = hh + mm + colon + days + merry;
+        let nyMode = false, nyDays = 0, nyHappy = false;
+        if (nyState) {
+          nyMode = true;
+          const t = nyTarget();
+          if (!t) nyHappy = true;
+          else nyDays = Math.ceil((t - new Date(y, m, dd)) / 86400000);
+        }
+        const key = hh + mm + colon + days + merry + nyMode + nyDays;
         if (key === lcdLastKey) return;
         lcdLastKey = key;
         setLcd('lcd-clock', hh + ':' + mm, colon);
         document.getElementById('lcd-ampm').textContent = suffix;
         const daysEl = document.getElementById('lcd-days');
-        if (merry) {
+        if (nyMode) {
+          daysEl.style.display = nyHappy ? 'none' : '';
+          if (!nyHappy) setLcd('lcd-days', String(nyDays).padStart(nyDays >= 100 ? 3 : 2, ' '), false);
+          document.getElementById('lcd-days-label').textContent = nyHappy ? LCD_NY.happy.join(' ') : LCD_TXT.unit(nyDays) + ' ' + LCD_NY.to;
+        } else if (merry) {
           daysEl.style.display = 'none';
           document.getElementById('lcd-days-label').textContent = LCD_TXT.merry.join(' ');
         } else {
