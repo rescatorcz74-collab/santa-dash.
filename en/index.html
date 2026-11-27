@@ -1427,7 +1427,7 @@
             <div class="cr-row"><span>Automated Builds (CI/CD)</span><span>GitHub Actions</span></div>
             <div class="cr-row"><span>Updates</span><span>Automatic · Over the Air</span></div>
             <div class="cr-row"><span>Release Engineering</span><span>Claude &amp; Jiri Smejc</span></div>
-            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.28</div>
+            <div class="cr-list cr-small">Every update published to GitHub reaches all players automatically.<br>Version 5.30</div>
 
             <div class="cr-head">— FONTS —</div>
             <div class="cr-row"><span>Press Start 2P</span><span>CodeMan38</span></div>
@@ -2554,12 +2554,12 @@
             "#..T...G..#.T.R..T..G#",
             "#.G..G....#.....G..T.#",
             "#.####.######...####.#",
-            "#..G...T..TT.G..T.G.G#",
+            "#..G...T..TT.G....G.G#",
             "#..T...G..#..#..G..T.#",
             "#.G..###..#  #..######",
             "#.G..#G...#M #..#    #",
             "#.T..#....#  #..#    #",
-            "#.G..#..T..G....#G  ##",
+            "#.G..#..T..G.....G  ##",
             "#....G..........   LE#",
             "#..G....T..G..########",
             "######################"
@@ -2861,6 +2861,8 @@
         practiceLose: 'Practice games are not saved to the high scores.',
         masterNote: '👑 = XMAS MASTER',
         cleanLevel: '✨ CLEAN LEVEL! +1,500 pts',
+        reindeerElf: 'REINDEER STOMP! ELF SQUASHED +1,200 🦌',
+        reindeerExit: 'NOT THERE – IT WOULD BLOCK THE CHIMNEY!',
         finale: 'MERRY CHRISTMAS!',
         introLichens: (n, t) => `🌿 ${n} lichens   ⏱ ${t} s`,
         finaleSkip: 'tap to continue'
@@ -3539,6 +3541,32 @@
         updateHUD();
       }
 
+      // Sob dopadl na skřítka: velká odměna (jako dvě hvězdy) a dárky kolem –
+      // jen pod sobem zůstane volno, aby mohl dopadnout až k saním
+      const REINDEER_ELF_BONUS = 1200;
+      function reindeerCrushElf(x, ey) {
+        // políčka, která musí zůstat volná: cesta soba dolů a cesta, kudy se odtáhnou saně
+        const keepCells = [[x, ey], [x, ey + 1]];
+        if (!sleighPulled && sleighPos) {
+          for (const d of DIRS4) {
+            keepCells.push([sleighPos.x + d.dx, sleighPos.y + d.dy], [sleighPos.x + d.dx * 2, sleighPos.y + d.dy * 2]);
+          }
+        }
+        const keep = keepCells.filter(([kx, ky]) => {
+          const t = grid[ky]?.[kx];
+          return t === TILE.EMPTY || t === TILE.ENEMY;
+        });
+        explodeEnemy(x, ey);
+        score += REINDEER_ELF_BONUS - 500;     // celkem 1 200 místo běžných 500
+        for (const [kx, ky] of keep) {
+          if (grid[ky][kx] === TILE.GIFT) grid[ky][kx] = TILE.EMPTY;
+        }
+        hudFlashTimer = 1.4;
+        audio.playStarCollect();
+        spawnFloatingText(x, ey, L13_TXT.reindeerElf);
+        updateHUD();
+      }
+
       // =========================================================
       // 4. FYZIKA PADÁNÍ A POHYB NEPŘÁTEL
       // =========================================================
@@ -3570,6 +3598,9 @@
                 falling[y][x] = false;
                 updated[y + 1][x] = true;
                 checkReindeerTouchesSleigh(x, y + 1);
+              } else if (falling[y][x] && below === TILE.ENEMY) {
+                // Sob volným pádem rozdupal skřítka – a padá dál
+                reindeerCrushElf(x, y + 1);
               } else {
                 if (falling[y][x] && !playedThud) {
                   audio.playThud();
@@ -4011,7 +4042,16 @@
         else if (target === TILE.REINDEER && !falling[ny][nx]) {
           const behindX = nx + dx;
           const behindY = ny + dy;
-          if (grid[behindY]?.[behindX] === TILE.EMPTY) {
+          // Soba nejde dotlačit těsně ke krbu – zatarasil by ho a level by nešel dohrát
+          const blocksExit = exitPos && Math.abs(behindX - exitPos.x) + Math.abs(behindY - exitPos.y) <= 1;
+          if (blocksExit && grid[behindY]?.[behindX] === TILE.EMPTY) {
+            if (hintCooldown <= 0) {
+              hintCooldown = 2.2;
+              audio.playLocked();
+              spawnFloatingText(nx, ny, L13_TXT.reindeerExit);
+            }
+          }
+          else if (grid[behindY]?.[behindX] === TILE.EMPTY) {
             pushCounter++;
             if (pushCounter >= 1) {
               grid[behindY][behindX] = TILE.REINDEER;
